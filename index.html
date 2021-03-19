@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+  </head>
+  <body>
+    <form>
+      <textarea name="playerAction" rows="4" cols="100" style="font-family:'Courier New'; font-size:16px;"></textarea>
+      <input type="button" onClick="formSubmit()" value="Submit" />
+    </form>
+    <b><p id="pInstruction" style="font-size:24px; font-family:'Courier New';"></p></b>
+    <textarea id="inputResponse" rows="4" cols="100" style="font-family:'Courier New'; font-size:16px;"></textarea>
+    <button onclick="copyResponse()">Copy text</button>
+  </body>
+  <script type="text/javascript">
+
+    function formSubmit() {
+      document.getElementById('pInstruction').innerHTML = 'Loading, please wait...'
+      google.script.run
+        .withSuccessHandler(onSuccess)
+        .withFailureHandler(onFailure)
+        .messageController(document.forms[0]);
+    }
+
+    function onSuccess(response) {
+      document.getElementById('pInstruction').innerHTML = response.instruction
+      document.getElementById("inputResponse").value = response.textToCopy
+    }
+
+    function onFailure(e){
+      document.getElementById('pInstruction').innerHTML = `&#129302 - Something went wrong. ${e}`
+    }
+
+    function copyResponse() { 
+      var copyText = document.getElementById("inputResponse") 
+      copyText.select() 
+      copyText.setSelectionRange(0, 99999) 
+      document.execCommand("copy") 
+    }
+  </script>
+</html>
