@@ -6,31 +6,45 @@ const CONFIDENCE_TO_ASK = 25.0
 
 const MSG_ATTACK = 'Ask the player for an attack roll, if he has already done it apply the combat mechanics'
 const MSG_GENERATE_TEXT = 'Generate text'
-
-function test(){
-
-  const locale = 'pt-br'
-  const dateNow = Date.now()
-  const newDate = new Date()
-  
-  //console.log(new Date().toLocaleString('pt-br'))
-  /*const numero = Number('14.35%'.replace('%',''))
-  if (numero < CONFIDENCE_TO_ASK) {
-    console.log('passou aqui')
-  }*/
-}
+const MSG_OOC = 'Out Of Character'
 
 function processMessage(message) {
 
   const response = {}
-  response.instruction = ''
+  response.instruction = MSG_OOC
   response.textToCopy = ''
 
+  let label = 'ooc'
+
   if (message.toLowerCase().includes('rpgai attack')) {
+    label = 'attack'
     response.instruction =  MSG_ATTACK
+    message = message.replace('rpgai attack', '').trim()
+  }
+
+  if (message.toLowerCase().includes('rpgai speak')) {
+    label = 'speak'
+    response.instruction =  MSG_GENERATE_TEXT
+    message = message.replace('rpgai speak', '').trim()
+  }
+
+  if (message.toLowerCase().includes('rpgai story')) {
+    label = 'story'
+    response.instruction =  MSG_GENERATE_TEXT
+    message = message.replace('rpgai story', '').trim()
+  }
+
+  if (!message.toLowerCase().includes('rpgai action')) {
+    // Saving in the player messages sheet
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('player_messages')
+    sheet.appendRow([Date.now(), new Date().toLocaleString('pt-br'), String(message), String('APP_SCRIPT_UI'), label])
+    
     return response
   }
-  
+
+  message = message.replace('rpgai action', '').trim()
+
+  // rpgai action/check
   const responseJson = skillPredict('APP_SCRIPT_UI', message)
 
   /* json array of checks where the object key is the skill's name predicted by the model and the value is the confidence
@@ -78,7 +92,7 @@ function skillPredict(playerName, action){
 
   const responseJson = JSON.parse(response.getContentText())
 
-  // Saving in the sheet
+  // Saving in the checks sheet
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('dnd5e_checks')
   sheet.appendRow([Date.now(), new Date().toLocaleString('pt-br'), String(action), JSON.stringify(responseJson.predictions_list), responseJson.run_time, String(playerName)])
 
