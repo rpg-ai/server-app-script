@@ -7,6 +7,10 @@ function doGet() {
     return processMessage(message)
   }
   
+  function generatorController(generationType, subtype) {
+    return randomGenerate(generationType, subtype)
+  }
+  
   function doPost(e) {
   
     //jotform ID

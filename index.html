@@ -11,6 +11,12 @@
     <b><p id="pInstruction" style="font-size:24px; font-family:'Courier New';"></p></b>
     <textarea id="inputResponse" rows="4" cols="100" style="font-family:'Courier New'; font-size:16px;"></textarea>
     <button onclick="copyResponse()">Copy text</button>
+    <div>
+      <button onclick="randomGenerate('Location', 'World')">Location: World</button>
+      <button onclick="randomGenerate('Location', '')">Location: Anywhere</button>
+      <button onclick="randomGenerate('Quest', '')">Quest</button>
+      <button onclick="randomGenerate('Encounter', 'Dungeon')">Encounter: Dungeon</button>
+    </div>
   </body>
   <script type="text/javascript">
 
@@ -20,6 +26,14 @@
         .withSuccessHandler(onSuccess)
         .withFailureHandler(onFailure)
         .messageController(document.forms[0]);
+    }
+
+    function randomGenerate(generationType, subtype) {
+      document.getElementById('pInstruction').innerHTML = 'Loading, please wait...'
+      google.script.run
+        .withSuccessHandler(onSuccess)
+        .withFailureHandler(onFailure)
+        .generatorController(generationType, subtype);
     }
 
     function onSuccess(response) {
