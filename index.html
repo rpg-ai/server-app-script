@@ -29,6 +29,14 @@
       <button onclick="randomGenerate('Encounter', 'Town')">Encounter: in Town</button>
       <button onclick="randomGenerate('Encounter', 'Wilderness')">Encounter: in the Wilderness</button>
     </div>
+    <div>
+      <b><p id="pTextGen" style="font-size:24px; font-family:'Courier New';">text generation by gpt2 API deepai.org</p></b>
+      <form>
+        <textarea name="textSeed" rows="15" cols="50" style="font-family:'Courier New';"></textarea>
+        <textarea id="textGenerationOutput" rows="15" cols="50" style="font-family:'Courier New';"></textarea>
+        <input type="button" onClick="generateText()" value="Generate text" />
+      </form>
+    </div>
   </body>
   <script type="text/javascript">
 
@@ -38,6 +46,17 @@
         .withSuccessHandler(onSuccess)
         .withFailureHandler(onFailure)
         .messageController(document.forms[0]);
+    }
+
+    function generateText() {
+      document.getElementById('pTextGen').innerHTML = 'Loading, please wait...'
+      google.script.run
+        .withSuccessHandler(response => {
+          document.getElementById('pTextGen').innerHTML = response.instruction
+          document.getElementById("textGenerationOutput").value = response.textToCopy
+        })
+        .withFailureHandler(onFailure)
+        .textGenerateController(document.forms[1]);
     }
 
     function randomGenerate(generationType, subtype) {

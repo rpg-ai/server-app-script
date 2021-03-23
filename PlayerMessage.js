@@ -25,7 +25,9 @@ function processMessage(message) {
   if (message.toLowerCase().includes('rpgai speak')) {
     label = 'speak'
     response.instruction =  MSG_GENERATE_TEXT
+    //response.instruction =  ''
     message = message.replace('rpgai speak', '').trim()
+    //response.textToCopy = generateText(message)
   }
 
   if (message.toLowerCase().includes('rpgai story')) {
