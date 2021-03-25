@@ -67,7 +67,8 @@ function processMessage(message) {
     response.instruction = MSG_GENERATE_TEXT
     return response
   }
-
+  response.instruction = ''
+  
   // Formatting the message to ask for a check(s)
   const textToCopy = ':d20: **Roll a {skill} check**'
   let skills = ''
