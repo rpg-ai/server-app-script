@@ -48,3 +48,7 @@ function generateText(seed) {
   
   return myResponse.trim()
 }
+
+function test(){
+  generateText('Linarv fails to jump the open pit trap.')
+}

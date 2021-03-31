@@ -4,6 +4,13 @@ const LOCATION = 'Location'
 const ENCOUNTER = 'Encounter'
 const DEFAULT_QUANTITY = '10'
 
+function randomGenerateWrap(generationType, subtype){
+  return {
+    instruction: '',
+    textToCopy: randomGenerate(generationType, subtype)
+  }
+}
+
 function randomGenerate(generationType, subtype) {
 
   let url = `${DONJON_URL}?type=${generationType}`
@@ -31,9 +38,5 @@ function randomGenerate(generationType, subtype) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('randomly_generated')
   sheet.appendRow([Date.now(), new Date().toLocaleString('pt-br'), String(generationType), String(subtype), JSON.stringify(generated)])
 
-  const response = {}
-  response.instruction = ''
-  response.textToCopy = generated[Math.floor(Math.random() * 10)]
-
-  return response
+  return generated[Math.floor(Math.random() * 10)]
 }

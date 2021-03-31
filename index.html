@@ -1,86 +1,329 @@
 <!DOCTYPE html>
-<html>
-  <head>
+<html lang="pt-BR">
+<head>
     <base target="_top">
-  </head>
-  <body>
-    <form>
-      <textarea name="playerAction" rows="4" cols="100" style="font-family:'Courier New'; font-size:16px;"></textarea>
-      <input type="button" onClick="formSubmit()" value="Submit" />
-    </form>
-    <b><p id="pInstruction" style="font-size:24px; font-family:'Courier New';"></p></b>
-    <textarea id="inputResponse" rows="4" cols="100" style="font-family:'Courier New'; font-size:16px;"></textarea>
-    <button onclick="copyResponse()">Copy text</button>
-    <div style="margin-bottom:10px;">
-      <button onclick="randomGenerate('Quest', '')">Quest</button>
-      <button onclick="randomGenerate('NPC', '')">NPC</button>
-    </div>
-    <div style="margin-bottom:10px;">
-      <button onclick="randomGenerate('Location', '')">Location: Anywhere</button>
-      <button onclick="randomGenerate('Location', 'Dungeon')">Location: Dungeon</button>
-      <button onclick="randomGenerate('Location', 'Town')">Location: Town</button>
-      <button onclick="randomGenerate('Location', 'Wilderness')">Location: Wilderness</button>
-      <button onclick="randomGenerate('Location', 'World')">Location: World</button>
-    </div>
-    <div style="margin-bottom:10px;">
-      <button onclick="randomGenerate('Encounter', 'Dungeon')">Encounter: in a Dungeon</button>
-      <button onclick="randomGenerate('Encounter', 'Road')">Encounter: on the Road</button>
-      <button onclick="randomGenerate('Encounter', 'Sea')">Encounter: at Sea</button>
-      <button onclick="randomGenerate('Encounter', 'Town')">Encounter: in Town</button>
-      <button onclick="randomGenerate('Encounter', 'Wilderness')">Encounter: in the Wilderness</button>
-    </div>
-    <div>
-      <b><p id="pTextGen" style="font-size:24px; font-family:'Courier New';">text generation by gpt2 API deepai.org</p></b>
-      <form>
-        <textarea name="textSeed" rows="15" cols="50" style="font-family:'Courier New';"></textarea>
-        <textarea id="textGenerationOutput" rows="15" cols="50" style="font-family:'Courier New';"></textarea>
-        <input type="button" onClick="generateText()" value="Generate text" />
-      </form>
-    </div>
-  </body>
-  <script type="text/javascript">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RPG AI</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
-    function formSubmit() {
-      document.getElementById('pInstruction').innerHTML = 'Loading, please wait...'
-      google.script.run
-        .withSuccessHandler(onSuccess)
-        .withFailureHandler(onFailure)
-        .messageController(document.forms[0]);
-    }
+      body {
+          background-color: #ffffff;
+      }
 
-    function generateText() {
-      document.getElementById('pTextGen').innerHTML = 'Loading, please wait...'
+      .class-menu {
+          width: 100vmax;
+          height: 100vh;
+          background-color: #414153;
+          margin: -8px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+      }
+
+      .class-menu button {
+          height: 40px;
+          margin: 0 10px 0 10px;
+          padding: 0 10px 0 10px;
+          font: 500 1.5rem 'Poppins', sans-serif;
+          border: none;
+          border-radius: 5px;
+          background-color: #707090;
+          color: white;
+          cursor: pointer;
+          transition: background-color 0.5s;
+      }
+
+      .class-menu button:hover {
+          background-color: #9a9ac5;
+      }
+
+      .chat-header {
+          width: 100%;
+          display: flex;
+          justify-content: flex-start;
+      }
+
+      .chat-header .rpgai-logo {
+          cursor: pointer;
+          display: flex;
+      }
+
+      .chat-header .rpgai-logo span {
+          font: bold 1.5rem 'Poppins', sans-serif;
+          align-self: center;
+      }
+
+      .chat-header .rpgai-logo img {
+          width: 15%;
+      }
+
+      .messages-container {
+          // overflow-y: scroll;
+          padding-bottom: 5%;
+      }
+
+      .messages {
+          display: flex;
+          margin: 10px 10px 0 10px;
+      }
+
+      .messages.right {
+          justify-content: flex-end;
+      }
+
+      .messages.left {
+          justify-content: flex-start;
+      }
+
+      .messages * {
+          font: 400 1.3rem 'Poppins', sans-serif;
+      }
+
+      .message {
+          width: 70%;
+          padding: 10px 20px;
+          border-radius: 15px;
+          margin-bottom: 5px;
+      }
+
+      .player-message {
+          background-color: #e5e5e5;
+      }
+
+      .dm-message {
+          background-color: #d3d3d3;
+      }
+
+      .message .title {
+          font-size: 1.5rem;
+          font-weight: 600;
+          margin-left: -10px;
+      }
+
+      .message .subtitle {
+          font-size: 0.9rem;
+          font-weight: 500;
+          margin-left: 5px;
+      }
+
+      .message p {
+          margin-top: 5px;
+      }
+
+      .roll-button {
+          height: 40px;
+          margin: 0 0 0 10px;
+          padding: 0 10px;
+          font: 500 1.5rem 'Poppins', sans-serif;
+          border: none;
+          border-radius: 5px;
+          background-color: #414153;
+          color: white;
+          cursor: pointer;
+          transition: background-color 0.5s;
+      }
+
+      .roll-button:hover {
+          background-color: #535369;
+      }
+
+      .chat-footer {
+          position: fixed;
+          left: 0;
+          bottom: 0;
+
+          display: flex;
+          justify-content: center;
+
+          width: 100%;
+          height: 10%;
+
+          background-color: #e2e2e2;
+          font-family: 'Poppins', sans-serif;
+      }
+
+      .chat-footer .input {
+          align-self: center;
+          width: 70%;
+          display: flex;
+      }
+
+      .chat-footer .input select {
+          height: 40px;
+          margin: 0 10px 0 10px;
+          padding: 0 10px 0 10px;
+          font: 500 1.5rem 'Poppins', sans-serif;
+          border: none;
+          border-radius: 5px;
+          background-color: #414153;
+          color: white;
+          cursor: pointer;
+      }
+
+      .chat-footer .input input {
+          height: 40px;
+          font: 1.3rem 'Poppins', sans-serif;
+          width: 100%;
+
+          border: none;
+          border-radius: 10px;
+
+          padding: 0 10px 0 10px;
+      }
+
+      .chat-footer .input button {
+          height: 40px;
+          margin: 0 10px 0 10px;
+          padding: 0 10px 0 10px;
+          font: 500 1.5rem 'Poppins', sans-serif;
+          border: none;
+          border-radius: 5px;
+          background-color: #414153;
+          color: white;
+          cursor: pointer;
+          transition: background-color 0.5s;
+      }
+
+      .chat-footer button:hover {
+          background-color: #535369;
+      }
+    </style>
+</head>
+<body>
+    <div id="rpgai" class="rpgai-chat">
+        <!-- Select Character Class Div -->
+        <div v-if="selectedClass === null" id="characterClass" class="class-menu">
+
+        </div>
+        <div v-else>
+            <div class="chat-header">
+                <a class="rpgai-logo">
+                    <img src="https://raw.githubusercontent.com/rpg-ai/rpgai/master/assets/logo.jpg" alt="logo"/>
+                    <span>RPG AI</span>
+                </a>
+            </div>
+            <div class="messages-container">
+              <div v-for="message in messages" class="messages" v-bind:class="{'right': message.sender === 'player', 'left': message.sender !== 'player'}">
+                <div v-if="message.sender === 'player'" class="message player-message">
+                    <span class="title">{{ message.sender }}</span> <span class="subtitle">{{ message.type }}</span>
+                    <p>{{ message.content }}</p>
+                </div>
+                <div v-else class="message dm-message">
+                    <span class="title">{{ message.sender }}</span> <span class="subtitle">{{ message.type }}</span>
+                    <p>{{ message.content }}</p>
+                    <button v-for="button in message.predictions" @click="sendRollResult(button.value)" class="roll-button">{{ button.label }}</button>
+                </div>
+              </div>
+            </div>
+            <footer class="chat-footer">
+            <div class="input">
+                <select v-model="form.type">
+                    <option value="action">Ação</option>
+                    <option value="attack">Ataque</option>
+                    <option value="speak">Fala</option>
+                    <option value="history">História</option>
+                </select>
+                <input v-model="form.content" placeholder="Digite alguma coisa...">
+                <button @click="sendMessage">Enviar</button>
+            </div>
+        </footer>
+        </div>
+    </div>
+</body>
+<script type="text/javascript">
+    let rpgSessionId = ''
+
+    function generateRPGSession(characterClass) {
+      // simulava o loading
+      //document.getElementById('pInstruction').innerHTML = 'Generating adventure, please wait...'
+
       google.script.run
         .withSuccessHandler(response => {
-          document.getElementById('pTextGen').innerHTML = response.instruction
-          document.getElementById("textGenerationOutput").value = response.textToCopy
+          rpgSessionId = response.rpgSessionId;
+          app._data.selectedClass = characterClass
+          onSuccess(response)
         })
         .withFailureHandler(onFailure)
-        .textGenerateController(document.forms[1]);
+        .rpgSessionController(characterClass)
     }
 
-    function randomGenerate(generationType, subtype) {
-      document.getElementById('pInstruction').innerHTML = 'Loading, please wait...'
+    let app = new Vue({
+        el: '#rpgai',
+        data: function () {
+            return {
+                selectedClass: null,
+                form: {
+                    content: null,
+                    type: "action",
+                },
+                messages: [],
+            }
+        },
+        methods: {
+            sendMessage: function () {
+              let scope = this;
+              const playerAction = {
+                  sender: "player",
+                  content: scope.form.content,
+                  type: scope.form.type,
+              }
+              scope.messages.push(playerAction);
+              sendMessageToBackend(playerAction);
+              scope.form = {
+                  content: null,
+                  type: "action",
+              };
+            },
+            sendRollResult: function (value) {
+              let scope = this;
+              scope.messages.push({
+                sender: "master",
+                content: value,
+                type: "check result",
+              })
+            }
+        },
+
+    });
+
+    google.script.run
+        .withSuccessHandler(response => {
+          let characterClassArray = response 
+
+          characterClassArray.forEach( characterClass => {
+            const buttonHtml = `<button value="${characterClass}" onclick="generateRPGSession(this.value)">${characterClass}</button>`
+            document.getElementById("characterClass").innerHTML += buttonHtml
+          })
+        })
+        .withFailureHandler(onFailure)
+        .characterClassController()
+
+    function sendMessageToBackend(playerAction) {
+      // document.getElementById('pInstruction').innerHTML = 'Loading, please wait...'
+      // const playerAction = document.getElementById('playerAction').value
       google.script.run
         .withSuccessHandler(onSuccess)
         .withFailureHandler(onFailure)
-        .generatorController(generationType, subtype);
+        .messageController(playerAction, rpgSessionId)
     }
 
     function onSuccess(response) {
-      document.getElementById('pInstruction').innerHTML = response.instruction
-      document.getElementById("inputResponse").value = response.textToCopy
+      if(response.textToCopy) {
+          //document.getElementById("inputResponse").value = response.textToCopy
+          app._data.messages.push({
+            sender: "master",
+            type: "history",
+            content: response.textToCopy,
+            predictions: response.predictions
+          });
+      }
     }
 
     function onFailure(e){
-      document.getElementById('pInstruction').innerHTML = `&#129302 - Something went wrong. ${e}`
+        document.getElementById('pInstruction').innerHTML = `&#129302 - Something went wrong. ${e}`
     }
-
-    function copyResponse() { 
-      var copyText = document.getElementById("inputResponse") 
-      copyText.select() 
-      copyText.setSelectionRange(0, 99999) 
-      document.execCommand("copy") 
-    }
-  </script>
+</script>
 </html>
