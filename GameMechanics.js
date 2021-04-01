@@ -18,31 +18,36 @@ function processCheck(checkValue, rpgSessionId) {
   const response = {}
   response.instruction = ''
 
-  const sessionDifficulty = findSession(rpgSessionId).difficultyClass
-  if (checkValue >= sessionDifficulty) {
-    response.instruction = `${checkValue} is a success`
-    //generateText(seed)
+  const rpgSession = findSession(rpgSessionId)
+  if (checkValue >= rpgSession.difficultyClass) {
+    const seedText = `${rpgSession.encounter} You successfully ${rpgSession.lastAction} and`
+    response.textToCopy = `You roll a ${checkValue}.\n${generateText(seedText)}`
   } else {
-    response.instruction = `${checkValue} is a failure`
+    const seedText = `${rpgSession.encounter} You fail to ${rpgSession.lastAction} and`
+    response.textToCopy = `You roll a ${checkValue}.\n${generateText(seedText)}`
   }
 
   return response
-}
-
-function isSucess(checkValue) {
-  //TO DO change for the Sucess/Failure check mechanic 
-  return checkValue > 10
 }
 
 function startGame(selectedClass) {
   const rpgSessionId = Date.now()
   
   const quest = randomGenerate('Quest', '')
-  const gameSettings = `${randomGenerate('Location', 'World')}\n${quest}\nYou are in ${randomGenerate('Location', '')} ${randomGenerate('Encounter', 'Dungeon')}`
+  const encounter = randomGenerate('Encounter', 'Dungeon')
+  const gameSettings = `${randomGenerate('Location', 'World')}\n${quest}\nYou are in ${randomGenerate('Location', '')} ${encounter}`
+
+  session = {
+    rpgSessionId, 
+    startedOn: new Date().toLocaleString('pt-br'),
+    selectedClass,
+    quest: String(quest),
+    encounter: String(encounter),
+    difficultyClass: difficultyClass()
+  }
 
   // Saving the game
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('rpg_session')
-  sheet.appendRow([rpgSessionId, new Date().toLocaleString('pt-br'), selectedClass, String(quest), difficultyClass()])
+  saveSession(session)
 
   return {
     instruction: '',
@@ -51,34 +56,10 @@ function startGame(selectedClass) {
   }
 }
 
-function findSession (rpgSessionId){
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('rpg_session')
-  
-  const row = findRow(sheet, 0, rpgSessionId)
-  if(!row) {
-    return null
-  }
-
-  const rpgSessionData = sheet.getSheetValues(row, 1, 1, sheet.getLastColumn()-1).reduce((a, b) => { return a.concat(b) })
-  const rpgSession = {
-    characterClass: rpgSessionData[2],
-    difficultyClass: rpgSessionData[4]
-  }
-
-  return rpgSession
-}
-
-function updateLastAction(action, rpgSessionId) {
-  const rpgSessionSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('rpg_session')
-
-  // Sheet row number corresponding to the session
-  const row = findRow(rpgSessionSheet, 0, rpgSessionId)
-
-  // Get Range in the sheet at row, column = 6, number of rows = 1, number of columns = 2 (last_action, update_at)
-  const range = rpgSessionSheet.getRange(row, 6, 1, 2)
-
-  // Updating values in the sheet
-  range.setValues([[String(action), String(Date.now())]])
+function newEncounter(rpgSessionId) {
+  const encounter = randomGenerate('Encounter', 'Dungeon')
+  updateEncounter(encounter, rpgSessionId)
+  return encounter
 }
 
 function difficultyClass() {

@@ -11,7 +11,7 @@ const MSG_OOC = 'Out Of Character'
 const messageType = {
   ATTACK: 'attack',
   SPEAK: 'speak',
-  HISTORY: 'history',
+  STORY: 'story',
   ACTION: 'action'
 }
 
@@ -21,6 +21,8 @@ function test() {
 
 function processMessage(message, rpgSessionId) {
 
+  const rpgSession = findSession(rpgSessionId)
+
   const response = {}
   response.instruction = MSG_OOC
   response.textToCopy = ''
@@ -29,19 +31,18 @@ function processMessage(message, rpgSessionId) {
 
   if(message.type === messageType.ATTACK) {
     label = 'attack'
-    response.instruction =  MSG_ATTACK
+    response.textToCopy = 'Combat not implemented'
   }
 
   if (message.type === messageType.SPEAK) {
     label = 'speak'
-    response.instruction =  MSG_GENERATE_TEXT
-    //response.instruction =  ''
-    //response.textToCopy = generateText(message)
+    const seedText = `${rpgSession.lastAction} You speak: -${message.content}`
+    response.textToCopy = generateText(seedText)
   }
 
-  if (message.type === messageType.HISTORY) {
+  if (message.type === messageType.STORY) {
     label = 'history'
-    response.instruction =  MSG_GENERATE_TEXT
+    response.textToCopy = newEncounter(rpgSessionId)
   }
 
   if (message.type !== messageType.ACTION) {
@@ -74,7 +75,8 @@ function processMessage(message, rpgSessionId) {
   }
 
   if (checksToAsk.length === 0) {
-    response.instruction = MSG_GENERATE_TEXT
+    const seedText = `${rpgSession.encounter} You ${rpgSession.lastAction} and`
+    response.textToCopy = generateText(seedText)
     return response
   }
   
@@ -82,10 +84,7 @@ function processMessage(message, rpgSessionId) {
   
   // Formatting the message to ask for a check(s)
   const textToCopy = 'Roll a {skill} check'
-  let skills = ''
-
-  //
-  const rpgSession = findSession(rpgSessionId) 
+  let skills = '' 
 
   checksToAsk.forEach((skillName, index) => {
     

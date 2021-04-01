@@ -221,13 +221,13 @@
             <footer class="chat-footer">
             <div class="input">
                 <select v-model="form.type">
-                    <option value="action">Ação</option>
-                    <option value="attack">Ataque</option>
-                    <option value="speak">Fala</option>
-                    <option value="history">História</option>
+                    <option value="action">Do</option>
+                    <option value="attack">Attack</option>
+                    <option value="speak">Say</option>
+                    <option value="story">Story</option>
                 </select>
-                <input v-model="form.content" placeholder="Digite alguma coisa...">
-                <button @click="sendMessage">Enviar</button>
+                <input v-model="form.content" placeholder="What do you do?">
+                <button @click="sendMessage">Send</button>
             </div>
         </footer>
         </div>
@@ -279,11 +279,16 @@
             },
             sendRollResult: function (value) {
               let scope = this;
-              scope.messages.push({
+              checkRequested(value)
+              scope.form = {
+                  content: null,
+                  type: "action",
+              };
+              /*scope.messages.push({
                 sender: "master",
                 content: value,
                 type: "check result",
-              })
+              })*/
             }
         },
 
@@ -310,12 +315,20 @@
         .messageController(playerAction, rpgSessionId)
     }
 
+    function checkRequested(checkValue) {
+      //document.getElementById('pInstruction').innerHTML = 'Loading, please wait...'
+      google.script.run
+        .withSuccessHandler(onSuccess)
+        .withFailureHandler(onFailure)
+        .checkController(checkValue, rpgSessionId)
+    }
+
     function onSuccess(response) {
       if(response.textToCopy) {
           //document.getElementById("inputResponse").value = response.textToCopy
           app._data.messages.push({
             sender: "master",
-            type: "history",
+            type: "story",
             content: response.textToCopy,
             predictions: response.predictions
           });
