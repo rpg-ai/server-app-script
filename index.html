@@ -213,7 +213,10 @@
                 </div>
                 <div v-else class="message dm-message">
                     <span class="title">{{ message.sender }}</span> <span class="subtitle">{{ message.type }}</span>
-                    <p>{{ message.content }}</p>
+                    <p v-if="message.loading" style="margin: 0;">
+                      <img src="https://raw.githubusercontent.com/rpg-ai/rpgai/master/assets/Pulse-1s-200px-transp.gif" alt="loading content" style="width: 70px;"/>
+                    </p>
+                    <p v-else>{{ message.content }}</p>
                     <button v-for="button in message.predictions" @click="sendRollResult(button.value)" class="roll-button">{{ button.label }}</button>
                 </div>
               </div>
@@ -239,6 +242,9 @@
     function generateRPGSession(characterClass) {
       // simulava o loading
       //document.getElementById('pInstruction').innerHTML = 'Generating adventure, please wait...'
+      document.getElementById("characterClass").innerHTML = ''
+      const loadingHtml = `<img src="https://raw.githubusercontent.com/rpg-ai/rpgai/master/assets/gear-transp.gif" alt="loading content" style="width: 100px;">`
+      document.getElementById("characterClass").innerHTML += loadingHtml
 
       google.script.run
         .withSuccessHandler(response => {
@@ -263,6 +269,14 @@
             }
         },
         methods: {
+            sendLoadingMessage: function () {
+              let scope = this;
+              const message = {
+                sender: "master",
+                loading: true
+              };
+              scope.messages.push(message);
+            },
             sendMessage: function () {
               let scope = this;
               const playerAction = {
@@ -271,6 +285,7 @@
                   type: scope.form.type,
               }
               scope.messages.push(playerAction);
+              this.sendLoadingMessage();
               sendMessageToBackend(playerAction);
               scope.form = {
                   content: null,
@@ -284,12 +299,8 @@
                   content: null,
                   type: "action",
               };
-              /*scope.messages.push({
-                sender: "master",
-                content: value,
-                type: "check result",
-              })*/
-            }
+              this.sendLoadingMessage();
+            },
         },
 
     });
@@ -326,12 +337,18 @@
     function onSuccess(response) {
       if(response.textToCopy) {
           //document.getElementById("inputResponse").value = response.textToCopy
-          app._data.messages.push({
+          let message = {
             sender: "master",
             type: "story",
             content: response.textToCopy,
             predictions: response.predictions
-          });
+          };
+          if (message.predictions) {
+            message.type = "check request"
+          };
+          app._data.messages.pop();
+          app._data.messages.push(message);
+
       }
     }
 
