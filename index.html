@@ -41,6 +41,14 @@
       }
 
       .chat-header {
+          position: fixed;
+          left: 0;
+          top: 0;
+
+          background-color: #ebebeb;
+          border-bottom: solid 1px #474747;
+          
+          height: 70px;
           width: 100%;
           display: flex;
           justify-content: flex-start;
@@ -57,12 +65,14 @@
       }
 
       .chat-header .rpgai-logo img {
-          width: 15%;
+          width: 58px;
+          align-self: center;
       }
 
       .messages-container {
           // overflow-y: scroll;
           padding-bottom: 5%;
+          margin-top: 75px;
       }
 
       .messages {
@@ -201,7 +211,7 @@
         <div v-else>
             <div class="chat-header">
                 <a class="rpgai-logo">
-                    <img src="https://raw.githubusercontent.com/rpg-ai/rpgai/master/assets/logo.jpg" alt="logo"/>
+                    <img src="https://raw.githubusercontent.com/rpg-ai/public/main/images/logo.png" alt="logo"/>
                     <span>RPG AI</span>
                 </a>
             </div>
@@ -214,7 +224,7 @@
                 <div v-else class="message dm-message">
                     <span class="title">{{ message.sender }}</span> <span class="subtitle">{{ message.type }}</span>
                     <p v-if="message.loading" style="margin: 0;">
-                      <img src="https://raw.githubusercontent.com/rpg-ai/rpgai/master/assets/Pulse-1s-200px-transp.gif" alt="loading content" style="width: 70px;"/>
+                      <img src="https://raw.githubusercontent.com/rpg-ai/public/main/images/Pulse-1s-200px-transp.gif" alt="loading content" style="width: 70px;"/>
                     </p>
                     <p v-else>{{ message.content }}</p>
                     <button v-for="button in message.predictions" @click="sendRollResult(button.value)" class="roll-button">{{ button.label }}</button>
@@ -243,7 +253,7 @@
       // simulava o loading
       //document.getElementById('pInstruction').innerHTML = 'Generating adventure, please wait...'
       document.getElementById("characterClass").innerHTML = ''
-      const loadingHtml = `<img src="https://raw.githubusercontent.com/rpg-ai/rpgai/master/assets/gear-transp.gif" alt="loading content" style="width: 100px;">`
+      const loadingHtml = `<img src="https://raw.githubusercontent.com/rpg-ai/public/main/images/gear-transp.gif" alt="loading content" style="width: 100px;">`
       document.getElementById("characterClass").innerHTML += loadingHtml
 
       google.script.run
