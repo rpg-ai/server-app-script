@@ -121,6 +121,7 @@
 
       .message p {
           margin-top: 5px;
+          white-space: pre-wrap;
       }
 
       .roll-button {
@@ -224,10 +225,11 @@
                 <div v-else class="message dm-message">
                     <span class="title">{{ message.sender }}</span> <span class="subtitle">{{ message.type }}</span>
                     <p v-if="message.loading" style="margin: 0;">
-                      <img src="https://raw.githubusercontent.com/rpg-ai/public/main/images/Pulse-1s-200px-transp.gif" alt="loading content" style="width: 70px;"/>
+                        <img src="https://raw.githubusercontent.com/rpg-ai/public/main/images/Pulse-1s-200px-transp.gif" alt="loading content" style="width: 70px;"/>
                     </p>
                     <p v-else>{{ message.content }}</p>
                     <button v-for="button in message.predictions" @click="sendRollResult(button.value)" class="roll-button">{{ button.label }}</button>
+                    <button v-for="button in message.combatActions" @click="attackRoll(button.name)" class="roll-button">{{ button.name }}</button>
                 </div>
               </div>
             </div>
@@ -250,8 +252,6 @@
     let rpgSessionId = ''
 
     function generateRPGSession(characterClass) {
-      // simulava o loading
-      //document.getElementById('pInstruction').innerHTML = 'Generating adventure, please wait...'
       document.getElementById("characterClass").innerHTML = ''
       const loadingHtml = `<img src="https://raw.githubusercontent.com/rpg-ai/public/main/images/gear-transp.gif" alt="loading content" style="width: 100px;">`
       document.getElementById("characterClass").innerHTML += loadingHtml
@@ -297,6 +297,7 @@
               scope.messages.push(playerAction);
               this.sendLoadingMessage();
               sendMessageToBackend(playerAction);
+              // Clear the message text input
               scope.form = {
                   content: null,
                   type: "action",
@@ -311,6 +312,13 @@
               };
               this.sendLoadingMessage();
             },
+            attackRoll: function (actionName) {
+              this.sendLoadingMessage()
+              google.script.run
+                .withSuccessHandler(onSuccess)
+                .withFailureHandler(onFailure)
+                .attackController(actionName, rpgSessionId)
+            }
         },
 
     });
@@ -346,19 +354,19 @@
 
     function onSuccess(response) {
       if(response.textToCopy) {
-          //document.getElementById("inputResponse").value = response.textToCopy
-          let message = {
+        let message = {
             sender: "master",
             type: "story",
             content: response.textToCopy,
-            predictions: response.predictions
+            predictions: response.predictions,
+            combatActions: response.combatActions
           };
           if (message.predictions) {
             message.type = "check request"
           };
+          // messages.pop() removes the the last message from stack, the message with loading gif
           app._data.messages.pop();
           app._data.messages.push(message);
-
       }
     }
 

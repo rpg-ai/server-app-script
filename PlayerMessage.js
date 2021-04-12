@@ -4,7 +4,7 @@ const RESPONSE_PAGE_URL = 'https://rpg-ai.github.io/response-page/'
 //
 const CONFIDENCE_TO_ASK = 25.0
 
-const MSG_ATTACK = 'Ask the player for an attack roll, if he has already done it apply the combat mechanics'
+const MSG_ATTACK = 'How would you like to attack?'
 const MSG_GENERATE_TEXT = 'Generate text'
 const MSG_OOC = 'Out Of Character'
 
@@ -31,7 +31,8 @@ function processMessage(message, rpgSessionId) {
 
   if(message.type === messageType.ATTACK) {
     label = 'attack'
-    response.textToCopy = 'Combat not implemented'
+    response.textToCopy = MSG_ATTACK
+    response.combatActions = getCombatActions(rpgSession.characterClass,rpgSessionId)
   }
 
   if (message.type === messageType.SPEAK) {

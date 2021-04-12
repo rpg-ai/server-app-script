@@ -31,6 +31,11 @@ function rpgSessionController(selectedClass) {
 }
 
 function characterClassController() {
-  // Dnd5eCharacterClass
+  // Dnd5eCharacterClass.gs
   return getCharacterClass()
+}
+
+function attackController(actionName, rpgSessionId) {
+  // GameMechanics.gs
+  return combat(actionName, rpgSessionId)
 }
