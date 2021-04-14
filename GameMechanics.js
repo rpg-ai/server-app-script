@@ -59,13 +59,13 @@ function processCheck(checkValue, rpgSessionId) {
 
 function startGame(selectedClass) {
   const rpgSessionId = Date.now()
-  
+
   const quest = randomGenerate('Quest', '')
   const encounter = randomGenerate('Encounter', 'Dungeon')
   const gameSettings = `${randomGenerate('Location', 'World')}\n${quest}\nYou are in ${randomGenerate('Location', '')} ${encounter}`
 
   session = {
-    rpgSessionId, 
+    rpgSessionId,
     startedOn: new Date().toLocaleString('pt-br'),
     selectedClass,
     quest: String(quest),
@@ -81,7 +81,9 @@ function startGame(selectedClass) {
   return {
     instruction: '',
     textToCopy: gameSettings.concat('\n\nWhat do you do?'),
-    rpgSessionId
+    rpgSessionId,
+    hitPoints: findCharacter(rpgSessionId).hitPoints,
+    armorClass: getCharacterClassByName(selectedClass).armorClass,
   }
 }
 
@@ -94,7 +96,7 @@ function newEncounter(rpgSessionId) {
 function difficultyClass() {
 
   const difficultyClassNumber = Math.floor(Math.random() * 1000) + 10
-  
+
   if(difficultyClassNumber <= 475){
     return taskDifficulty.VERY_EASY
   }
@@ -117,7 +119,7 @@ function difficultyClass() {
 
   // difficultyClassNumber <= 1000
   return taskDifficulty.NEARLY_IMPOSSIBLE
-  
+
 }
 
 function combat(actionName, rpgSessionId) {
@@ -134,7 +136,7 @@ function combat(actionName, rpgSessionId) {
 
   const response = {}
 
-  const playerCharacter = findCharacter(rpgSessionId) 
+  const playerCharacter = findCharacter(rpgSessionId)
 
   // Firebolt automatically hits
   if(combatAction.name === WIZARD.combatActions[1].name) {
@@ -189,7 +191,7 @@ function combat(actionName, rpgSessionId) {
   playerCharacter.hitPoints = playerCharacter.hitPoints - enemyByDifficulty.EASY.combatActions[0].damage
 
   response.textToCopy = `${response.textToCopy} The enemy hits you. Damage taken is ${enemyByDifficulty.EASY.combatActions[0].damage}.\n\n`
-  
+
   if(playerCharacter.hitPoints <= 0) {
     response.textToCopy = response.textToCopy.concat('You die. GAME OVER')
     response.combatActions = []

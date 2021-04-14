@@ -15,7 +15,7 @@ function saveSession(session) {
 
 function findSession (rpgSessionId){
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('rpg_session')
-  
+
   const row = findRow(sheet, 0, rpgSessionId)
   if(!row) {
     return null
@@ -86,7 +86,7 @@ function saveCharacter(characterClass, rpgSessionId){
 
 function findCharacter(rpgSessionId){
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('character')
-  
+
   const row = findRow(sheet, 0, rpgSessionId)
   if(!row) {
     return null
@@ -117,7 +117,7 @@ function updateCharacter(playerCharacter, rpgSessionId) {
 
 function findEnemy (rpgSessionId){
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('enemy')
-  
+
   const row = findRow(sheet, 0, rpgSessionId)
   if(!row) {
     return null
@@ -137,7 +137,7 @@ function newEnemy(rpgSessionId) {
   const enemy = enemyByDifficulty.EASY
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('enemy')
   sheet.appendRow([rpgSessionId, enemy.name, enemy.hitPoints, true])
-  
+
   return {
     name: enemy.name,
     hitPoints: enemy.hitPoints,
