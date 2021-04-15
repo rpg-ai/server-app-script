@@ -229,7 +229,7 @@
             </a>
             <div class="game-info">
                 <span>HP: {{ gameInfo.playerHp }}</span>
-                <span>CA: {{ gameInfo.playerAc }}</span>
+                <span>AC: {{ gameInfo.playerAc }}</span>
             </div>
         </div>
         <div class="messages-container">
@@ -252,12 +252,12 @@
         <footer class="chat-footer">
             <div class="input">
                 <select v-model="form.type">
-                    <option value="action">Do</option>
+                    <option value="action">Action</option>
                     <option value="attack">Attack</option>
                     <option value="speak">Say</option>
                     <option value="story">Story</option>
                 </select>
-                <input v-model="form.content" placeholder="What do you do?">
+                <input v-model="form.content" :placeholder="placeholders[form.type]">
                 <button @click="sendMessage">Send</button>
             </div>
         </footer>
@@ -281,6 +281,12 @@
                     type: "action",
                 },
                 messages: [],
+                placeholders: {
+                    action: "What do you gonna do?",
+                    attack: "How do you attack the enemy?",
+                    speak: "What do you say?",
+                    story: null,
+                },
             }
         },
         methods: {
@@ -336,6 +342,7 @@
         google.script.run
             .withSuccessHandler(response => {
                 rpgSessionId = response.rpgSessionId;
+                app._data.placeholders.story = response.nextScene;
                 app._data.gameInfo.selectedClass = characterClass;
                 app._data.gameInfo.playerHp = response.hitPoints;
                 app._data.gameInfo.playerAc = response.armorClass;

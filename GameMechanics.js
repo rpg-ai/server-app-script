@@ -63,6 +63,7 @@ function startGame(selectedClass) {
   const quest = randomGenerate('Quest', '')
   const encounter = randomGenerate('Encounter', 'Dungeon')
   const gameSettings = `${randomGenerate('Location', 'World')}\n${quest}\nYou are in ${randomGenerate('Location', '')} ${encounter}`
+  const nextScene = 'Go to quarters and rest. Return to the vault at midnight to begin the mission.'
 
   session = {
     rpgSessionId,
@@ -75,13 +76,13 @@ function startGame(selectedClass) {
 
   // Saving the game
   saveSession(session)
-
   saveCharacter(selectedClass, rpgSessionId)
 
   return {
+    rpgSessionId,
+    nextScene,
     instruction: '',
     textToCopy: gameSettings.concat('\n\nWhat do you do?'),
-    rpgSessionId,
     hitPoints: findCharacter(rpgSessionId).hitPoints,
     armorClass: getCharacterClassByName(selectedClass).armorClass,
   }
