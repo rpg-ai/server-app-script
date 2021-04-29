@@ -301,7 +301,8 @@
 </div>
 </body>
 <script type="text/javascript">
-    let rpgSessionId = ''
+    let rpgSessionId = <?= rpgSessionId ?>
+    
     let app = new Vue({
         el: '#rpgai',
         data: function () {
@@ -385,14 +386,14 @@
 
         google.script.run
             .withSuccessHandler(response => {
-                rpgSessionId = response.rpgSessionId;
                 app._data.gameInfo.selectedClass = characterClass;
                 app._data.gameInfo.playerHp = response.hitPoints;
                 app._data.gameInfo.playerAc = response.armorClass;
+                app._data.storyPlaceholder = response.nextScene;
                 onSuccess(response)
             })
             .withFailureHandler(onFailure)
-            .rpgSessionController(characterClass)
+            .rpgSessionController(characterClass, rpgSessionId)
     }
 
     google.script.run
@@ -408,8 +409,6 @@
         .characterClassController()
 
     function sendMessageToBackend(playerAction) {
-        // document.getElementById('pInstruction').innerHTML = 'Loading, please wait...'
-        // const playerAction = document.getElementById('playerAction').value
         google.script.run
             .withSuccessHandler(onSuccess)
             .withFailureHandler(onFailure)
@@ -417,7 +416,6 @@
     }
 
     function checkRequested(checkValue) {
-        //document.getElementById('pInstruction').innerHTML = 'Loading, please wait...'
         google.script.run
             .withSuccessHandler(onSuccess)
             .withFailureHandler(onFailure)
@@ -443,7 +441,7 @@
     }
 
     function onFailure(e){
-        document.getElementById('pInstruction').innerHTML = `&#129302 - Something went wrong. ${e}`
+        alert(`Something went wrong. ${e}`)
     }
 </script>
 </html>

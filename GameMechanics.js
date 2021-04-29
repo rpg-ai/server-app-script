@@ -46,58 +46,49 @@ function processCheck(checkValue, rpgSessionId) {
   response.instruction = ''
 
   const rpgSession = findSession(rpgSessionId)
+
+  const currentScene = findScene(rpgSession.scene)
+
+  const questScene = findQuestScene(currentScene.questSceneId)
+  
   if (checkValue >= rpgSession.difficultyClass) {
-    const seedText = `${rpgSession.encounter} You successfully ${rpgSession.lastAction} and`
-    response.textToCopy = `You roll a ${checkValue}.\n${generateText(seedText)}`
+    // AI Response
+    response.textToCopy = `You roll a ${checkValue}.\n${generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} You successfully ${rpgSession.lastAction} and`, 
+      '', rpgSession.scene, NUMBER_OF_SENTENCES_ACTION)}`
   } else {
-    const seedText = `${rpgSession.encounter} You fail to ${rpgSession.lastAction} and`
-    response.textToCopy = `You roll a ${checkValue}.\n${generateText(seedText)}`
+    // AI Response
+    response.textToCopy = `You roll a ${checkValue}.\n${generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} You fail to ${rpgSession.lastAction} and`, 
+      '', rpgSession.scene, NUMBER_OF_SENTENCES_ACTION)}`
   }
 
   return response
 }
 
-function startGame(selectedClass) {
-  const rpgSessionId = Date.now()
+function startGame(selectedClass, rpgSessionId) {
 
-  const quest = randomGenerate('Quest', '')
-  const encounter = randomGenerate('Encounter', 'Dungeon')
-  const gameSettings = `${randomGenerate('Location', 'World')}\n${quest}\nYou are in ${randomGenerate('Location', '')} ${encounter}`
-  const nextScene = 'Go to quarters and rest. Return to the vault at midnight to begin the mission.'
-
-  session = {
-    rpgSessionId,
-    startedOn: new Date().toLocaleString('pt-br'),
-    selectedClass,
-    quest: String(quest),
-    encounter: String(encounter),
-    difficultyClass: difficultyClass()
-  }
-
-  // Saving the game
-  saveSession(session)
   saveCharacter(selectedClass, rpgSessionId)
 
+  // 2 is always the first scene number
+  const scene = findQuestScene(2)
+
+  const quest = `The last of the Kai Lords assigns you the mission to take the legendary Moonstone to Elzian—the principal city of the jungle realm of Dessi. There you are to seek out Lord Rimoah at the Tower of Truth.`
+
+  const gameSettings = `${quest}\nYou are in ${scene.place} ${scene.description}`
+
   return {
-    rpgSessionId,
-    nextScene,
     instruction: '',
     textToCopy: gameSettings.concat('\n\nWhat do you do?'),
+    nextScene: scene.nextSceneCondition,
+    rpgSessionId,
     hitPoints: findCharacter(rpgSessionId).hitPoints,
-    armorClass: getCharacterClassByName(selectedClass).armorClass,
+    armorClass: getCharacterClassByName(selectedClass).armorClass
   }
-}
-
-function newEncounter(rpgSessionId) {
-  const encounter = randomGenerate('Encounter', 'Dungeon')
-  updateEncounter(encounter, rpgSessionId)
-  return encounter
 }
 
 function difficultyClass() {
 
   const difficultyClassNumber = Math.floor(Math.random() * 1000) + 10
-
+  
   if(difficultyClassNumber <= 475){
     return taskDifficulty.VERY_EASY
   }
@@ -120,7 +111,7 @@ function difficultyClass() {
 
   // difficultyClassNumber <= 1000
   return taskDifficulty.NEARLY_IMPOSSIBLE
-
+  
 }
 
 function combat(actionName, rpgSessionId) {
@@ -131,13 +122,19 @@ function combat(actionName, rpgSessionId) {
     enemy = newEnemy(rpgSessionId)
   }
 
-  const charactherClass = getCharacterClassByName(findSession(rpgSessionId).characterClass)
+  const playerCharacter = findCharacter(rpgSessionId)
+
+  const charactherClass = getCharacterClassByName(playerCharacter.characterClass)
 
   const combatAction = charactherClass.combatActions.filter( action => actionName.includes(action.name))[0]
 
-  const response = {}
+  const response = {} 
 
-  const playerCharacter = findCharacter(rpgSessionId)
+  const rpgSession = findSession(rpgSessionId)
+
+  const currentScene = findScene(rpgSession.scene)
+
+  const questScene = findQuestScene(currentScene.questSceneId)
 
   // Firebolt automatically hits
   if(combatAction.name === WIZARD.combatActions[1].name) {
@@ -153,17 +150,26 @@ function combat(actionName, rpgSessionId) {
 
     if( attackValue >= enemyByDifficulty.EASY.armorClass ) {
       enemy.hitPoints = enemy.hitPoints - combatAction.damage
-      response.textToCopy = `You rolled a ${attackValue} in the attack rol. You hit the enemy. Damage done is ${combatAction.damage}.\n\n`
+      // AI Response
+      const sucessDescription = generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} You ${rpgSession.lastAction} and`, 
+      '', rpgSession.scene, NUMBER_OF_SENTENCES_COMBAT)
+    
+      response.textToCopy = `You rolled a ${attackValue} in the attack rol. ${sucessDescription} Damage done is ${combatAction.damage}.\n\n`
       updateEnemy(enemy, rpgSessionId)
 
     } else {
-      response.textToCopy = `You rolled a ${attackValue} in the attack rol. You fail to hit the enemy.\n\n`
+      // AI Response
+      const failureDescription = generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} You fail to ${rpgSession.lastAction} and`, 
+      '', rpgSession.scene, NUMBER_OF_SENTENCES_COMBAT)
+      response.textToCopy = `You rolled a ${attackValue} in the attack rol. ${failureDescription}\n\n`
     }
   }
 
   // Check if the enemy died
   if ( enemy.hitPoints <= 0 ) {
-    response.textToCopy = response.textToCopy.concat('The enemy died.')
+    const enemyDeathDescription = generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} He dies`, 
+      '', rpgSession.scene, NUMBER_OF_SENTENCES_ACTION)
+    response.textToCopy = response.textToCopy.concat(enemyDeathDescription)
     enemy.inCombat = false
     updateEnemy(enemy, rpgSessionId)
 
@@ -181,18 +187,23 @@ function combat(actionName, rpgSessionId) {
 
   }
 
-  response.combatActions = getCombatActions(charactherClass.name,rpgSessionId)
+  response.combatActions = getCombatActions(charactherClass.name, rpgSessionId)
 
   if(enemyAttackValue < charactherClass.armorClass) {
-    response.textToCopy = response.textToCopy.concat('The enemy fails to hit you.\n\n', MSG_ATTACK)
+    const enemyFailureDescription = generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} He fails to hit you`, 
+      '', rpgSession.scene, NUMBER_OF_SENTENCES_COMBAT)
+    response.textToCopy = response.textToCopy.concat(enemyFailureDescription, '\n\n', MSG_ATTACK)
 
     return response
   }
 
   playerCharacter.hitPoints = playerCharacter.hitPoints - enemyByDifficulty.EASY.combatActions[0].damage
 
-  response.textToCopy = `${response.textToCopy} The enemy hits you. Damage taken is ${enemyByDifficulty.EASY.combatActions[0].damage}.\n\n`
+   const enemySuccessDescription = generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} He hits you`, 
+      '', rpgSession.scene, NUMBER_OF_SENTENCES_COMBAT)
 
+  response.textToCopy = `${response.textToCopy} ${enemySuccessDescription} Damage taken is ${enemyByDifficulty.EASY.combatActions[0].damage}.\n\n`
+  
   if(playerCharacter.hitPoints <= 0) {
     response.textToCopy = response.textToCopy.concat('You die. GAME OVER')
     response.combatActions = []
@@ -202,8 +213,4 @@ function combat(actionName, rpgSessionId) {
 
   updateCharacter(playerCharacter, rpgSessionId)
   return response
-}
-
-function mytest() {
-  combat('Staff + Magic Shield 6/6', '1617824851693')
 }

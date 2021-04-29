@@ -1,7 +1,13 @@
 const DEEPAI_API_URL = 'https://api.deepai.org/api/text-generator'
 const DEEPAI_API_KEY = 'e3bb9547-1d82-4ab9-9b96-031bef9f08d9'
 
-const NUMBER_OF_SENTENCES = 1
+const OPENAI_API_URL = 'https://api.openai.com/v1/engines/davinci/completions'
+const OPENAI_API_KEY = 'sk-gbcWZW7Pzw2q66fZJBhoKMVgO5NvJNEDrYhm0G04'
+
+const NUMBER_OF_SENTENCES_SPEAK = 3
+const NUMBER_OF_SENTENCES_ACTION = 3
+const NUMBER_OF_SENTENCES_COMBAT = 1
+
 
 function generateTextWrap(seed){
   return {
@@ -49,6 +55,58 @@ function generateText(seed) {
   return myResponse.trim()
 }
 
-function test(){
-  generateText('Linarv fails to jump the open pit trap.')
+function generateText(seed, playerMessage, sceneId, numberOfSetences) {
+
+  seed = `${seed} ${playerMessage}`.trim()
+
+  payloadJson = JSON.stringify({
+    prompt: seed,
+    max_tokens: 100, // which are the chunks of text that the API generates one at a time
+    echo: true //  concatenate the prompt and the completion text
+  })
+
+  const options = {
+    method: "post",
+    headers: {
+      "Authorization": "Bearer " + OPENAI_API_KEY,
+      "Content-Type": "application/json"
+    },
+    payload: payloadJson
+  }
+
+  const openaiResponse = UrlFetchApp.fetch(
+    OPENAI_API_URL, options
+  );
+
+  const responseJson = JSON.parse(openaiResponse.getContentText())
+
+  saveGeneratedText({
+    id: responseJson.id,
+    createdAt: responseJson.created,
+    model: responseJson.model,
+    inputText: seed,
+    outputText: responseJson.choices[0].text,
+    sceneId
+  })
+  
+  // RegExp for splitting text into sentences and keeping the delimiter
+  const seedSentences = seed.match( /[^\.!\?]+[\.!\?]+/g )
+  //const outputSentences = responseJson.output.match( /[^\.!\?]+[\.!\?]+/g )
+  const outputSentences = responseJson.choices[0].text.match( /[^\.!\?]+[\.!\?]+/g )
+
+
+  let myResponse = ''
+
+  /* The API returns a lof of text that contains the seed text. So we separate the text in sentences to get 
+    the NUMBER OF SENTENCES after the seed sentences
+   */
+  outputSentences
+    .filter((sentence, index) => index >= seedSentences.length && index < (seedSentences.length + numberOfSetences))
+    .forEach(sentence => myResponse = myResponse.concat(sentence))
+
+  const scene = findScene(sceneId)
+
+  updateEncounter(`${scene.text} ${playerMessage} ${myResponse.trim()}`, sceneId)
+  
+  return myResponse.trim()
 }

@@ -10,26 +10,43 @@ function findRow(sheet, column, value) {
 
 function saveSession(session) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('rpg_session')
-  sheet.appendRow([session.rpgSessionId, session.startedOn, session.selectedClass, session.quest, session.encounter, session.difficultyClass])
+  sheet.appendRow([session.rpgSessionId, session.startedOn, session.selectedClass, session.quest, session.encounter, session.difficultyClass, '', '', session.sceneId, session.userId])
 }
 
 function findSession (rpgSessionId){
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('rpg_session')
-
+  
   const row = findRow(sheet, 0, rpgSessionId)
   if(!row) {
     return null
   }
 
-  const rpgSessionData = sheet.getSheetValues(row, 1, 1, sheet.getLastColumn()-1).reduce((a, b) => { return a.concat(b) })
+  const rpgSessionData = sheet.getSheetValues(row, 1, 1, sheet.getLastColumn()).reduce((a, b) => { return a.concat(b) })
   const rpgSession = {
     characterClass: rpgSessionData[2],
+    quest: rpgSessionData[3],
     encounter: rpgSessionData[4],
     difficultyClass: rpgSessionData[5],
-    lastAction: rpgSessionData[6]
+    lastAction: rpgSessionData[6],
+    scene: rpgSessionData[8],
+    userId: rpgSessionData[9]
   }
 
   return rpgSession
+}
+
+function updateSessionScene(scene, rpgSessionId) {
+
+  const rpgSessionSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('rpg_session')
+
+  // Sheet row number corresponding to the session
+  const row = findRow(rpgSessionSheet, 0, rpgSessionId)
+  // acho que esse 7 aqui ta errado
+  // Get Range in the sheet at row, column = 8, number of rows = 1, number of columns = 2 (update_at, scene)
+  const range = rpgSessionSheet.getRange(row, 8, 1, 2)
+
+  // Updating values in the sheet
+  range.setValues([[String(Date.now()), scene]])
 }
 
 function updateLastAction(action, rpgSessionId) {
@@ -45,14 +62,14 @@ function updateLastAction(action, rpgSessionId) {
   range.setValues([[String(action), String(Date.now())]])
 }
 
-function updateEncounter(encounter, rpgSessionId) {
-  const rpgSessionSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('rpg_session')
+function updateEncounter(encounter, sceneId) {
+  const rpgSessionSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('scene')
 
   // Sheet row number corresponding to the session
-  const row = findRow(rpgSessionSheet, 0, rpgSessionId)
+  const row = findRow(rpgSessionSheet, 0, sceneId)
 
-  // Get Range in the sheet at row, column = 5, number of rows = 1, number of columns = 1 (encounter)
-  const range = rpgSessionSheet.getRange(row, 5, 1, 1)
+  // Get Range in the sheet at row, column = 4, number of rows = 1, number of columns = 1 (text)
+  const range = rpgSessionSheet.getRange(row, 4, 1, 1)
 
   // Updating values in the sheet
   range.setValues([[String(encounter)]])
@@ -80,13 +97,13 @@ function saveCharacter(characterClass, rpgSessionId){
   }
 
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('character')
-  sheet.appendRow([rpgSessionId, hitPoints, spell_slot1, spell_slot2])
+  sheet.appendRow([rpgSessionId, hitPoints, spell_slot1, spell_slot2, characterClass])
 
 }
 
 function findCharacter(rpgSessionId){
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('character')
-
+  
   const row = findRow(sheet, 0, rpgSessionId)
   if(!row) {
     return null
@@ -96,7 +113,8 @@ function findCharacter(rpgSessionId){
   const character = {
     hitPoints: characterData[1],
     spellSlot1: Number(characterData[2]),
-    spellSlot2: Number(characterData[3])
+    spellSlot2: Number(characterData[3]),
+    characterClass: characterData[4]
   }
 
   return character
@@ -117,7 +135,7 @@ function updateCharacter(playerCharacter, rpgSessionId) {
 
 function findEnemy (rpgSessionId){
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('enemy')
-
+  
   const row = findRow(sheet, 0, rpgSessionId)
   if(!row) {
     return null
@@ -137,7 +155,7 @@ function newEnemy(rpgSessionId) {
   const enemy = enemyByDifficulty.EASY
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('enemy')
   sheet.appendRow([rpgSessionId, enemy.name, enemy.hitPoints, true])
-
+  
   return {
     name: enemy.name,
     hitPoints: enemy.hitPoints,
@@ -158,3 +176,46 @@ function updateEnemy(enemy, rpgSessionId) {
   range.setValues([[enemy.hitPoints, enemy.inCombat]])
 }
 
+function saveScene(scene) {
+  const sceneId = Date.now()
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('scene')
+  sheet.appendRow([sceneId, scene.rpgSessionId, scene.userId, scene.text, scene.questSceneId])
+  return sceneId
+}
+
+function findQuestScene(sceneNumber) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('quest')
+  const sceneData = sheet.getSheetValues(sceneNumber, 1, 1, sheet.getLastColumn()).reduce((a, b) => { return a.concat(b) })
+  const scene = {
+    place: sceneData[0],
+    secret: sceneData[1],
+    encounter: sceneData[2],
+    nextSceneCondition: sceneData[3],
+    description: sceneData[4] 
+  }
+
+  return scene
+}
+
+function findScene(sceneId) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('scene')
+
+  const row = findRow(sheet, 0, sceneId)
+  if(!row) {
+    return null
+  }
+
+  const sceneData = sheet.getSheetValues(row, 1, 1, sheet.getLastColumn() +1).reduce((a, b) => { return a.concat(b) })
+
+  return {
+    rpgSessionId: sceneData[1],
+    userId: sceneData[2],
+    text: sceneData[3],
+    questSceneId: sceneData[4]
+  }
+}
+
+function saveGeneratedText(objToSave){
+   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('generated_text')
+  sheet.appendRow([objToSave.id, objToSave.createdAt, objToSave.model, objToSave.inputText, objToSave.outputText, objToSave.sceneId])
+}
