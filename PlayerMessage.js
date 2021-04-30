@@ -24,7 +24,7 @@ function processMessage(message, rpgSessionId) {
 
   const questScene = findQuestScene(currentScene.questSceneId)
 
-  const response = {}
+  let response = {}
   response.instruction = MSG_OOC
   response.textToCopy = ''
 
@@ -40,6 +40,9 @@ function processMessage(message, rpgSessionId) {
     label = 'attack'
     response.textToCopy = MSG_ATTACK
     response.combatActions = getCombatActions(findCharacter(rpgSessionId).characterClass, rpgSessionId)
+
+    // GameMechanics.gs
+    response =  combat('Two Handed Sword', rpgSessionId)
   }
 
   if (message.type === messageType.SPEAK) {

@@ -126,7 +126,8 @@ function combat(actionName, rpgSessionId) {
 
   const charactherClass = getCharacterClassByName(playerCharacter.characterClass)
 
-  const combatAction = charactherClass.combatActions.filter( action => actionName.includes(action.name))[0]
+  // hardecoded figther attack action
+  const combatAction = FIGTHER.combatActions.filter( action => actionName.includes(action.name))[0]
 
   const response = {} 
 
@@ -187,12 +188,12 @@ function combat(actionName, rpgSessionId) {
 
   }
 
-  response.combatActions = getCombatActions(charactherClass.name, rpgSessionId)
+  //response.combatActions = getCombatActions(charactherClass.name, rpgSessionId)
 
   if(enemyAttackValue < charactherClass.armorClass) {
     const enemyFailureDescription = generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} He fails to hit you`, 
       '', rpgSession.scene, NUMBER_OF_SENTENCES_COMBAT)
-    response.textToCopy = response.textToCopy.concat(enemyFailureDescription, '\n\n', MSG_ATTACK)
+    response.textToCopy = response.textToCopy.concat(enemyFailureDescription)
 
     return response
   }
@@ -206,9 +207,9 @@ function combat(actionName, rpgSessionId) {
   
   if(playerCharacter.hitPoints <= 0) {
     response.textToCopy = response.textToCopy.concat('You die. GAME OVER')
-    response.combatActions = []
+    //response.combatActions = []
   } else {
-    response.textToCopy = `${response.textToCopy} You remaing hit points are ${playerCharacter.hitPoints}. \n\n ${MSG_ATTACK}`
+    response.textToCopy = `${response.textToCopy} You remaing hit points are ${playerCharacter.hitPoints}.`
   }
 
   updateCharacter(playerCharacter, rpgSessionId)

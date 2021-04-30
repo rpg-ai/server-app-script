@@ -249,7 +249,7 @@
         }
     </style>
 </head>
-<body>
+<body id="body">
 <div id="rpgai" class="rpgai-chat">
     <!-- Select Character Class Div -->
     <div v-if="gameInfo.selectedClass === null" id="characterClass" class="class-menu">
@@ -263,7 +263,7 @@
             </a>
             <div class="game-info">
                 <span>HP: {{ gameInfo.playerHp }}</span>
-                <span>CA: {{ gameInfo.playerAc }}</span>
+                <span>AC: {{ gameInfo.playerAc }}</span>
             </div>
         </div>
         <div class="messages-container">
@@ -348,18 +348,12 @@
                 this.sendLoadingMessage();
                 sendMessageToBackend(playerAction);
                 // Clear the message text input
-                scope.form = {
-                    content: null,
-                    type: "action",
-                };
+                scope.form["content"] = null;
             },
             sendRollResult: function (value) {
                 let scope = this;
                 checkRequested(value)
-                scope.form = {
-                    content: null,
-                    type: "action",
-                };
+                scope.form["content"] = null;
                 this.sendLoadingMessage();
             },
             attackRoll: function (actionName) {
