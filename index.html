@@ -275,7 +275,9 @@
                 <div v-else class="message dm-message">
                     <span class="title">{{ message.sender }}</span> <span class="subtitle">{{ message.type }}</span>
                     <p v-if="message.loading" style="margin: 0;">
-                        <img src="https://raw.githubusercontent.com/rpg-ai/public/main/images/Pulse-1s-200px-transp.gif" alt="loading content" style="width: 70px;"/>
+                        {{message}}
+                        <img src="https://cdn.discordapp.com/attachments/814609860074930186/837471261968826368/AnotherFlamboyantCobra-size_restricted.gif" alt="loading content" style="width: 70px;" v-if="message.loadingType === 'roll'" />
+                        <img src="https://raw.githubusercontent.com/rpg-ai/public/main/images/Pulse-1s-200px-transp.gif" alt="loading content" style="width: 70px;" v-else />
                     </p>
                     <p v-else>{{ message.content }}</p>
                     <button v-for="button in message.predictions" @click="sendRollResult(button.value)" class="roll-button">{{ button.label }}</button>
@@ -302,7 +304,7 @@
 </body>
 <script type="text/javascript">
     let rpgSessionId = <?= rpgSessionId ?>
-    
+
     let app = new Vue({
         el: '#rpgai',
         data: function () {
@@ -329,12 +331,15 @@
             }
         },
         methods: {
-            sendLoadingMessage: function () {
+            sendLoadingMessage: function (type) {
                 let scope = this;
-                const message = {
+                let message = {
                     sender: "master",
-                    loading: true
+                    loading: true,
                 };
+                if (type) {
+                    message["loadingType"] = type;
+                }
                 scope.messages.push(message);
             },
             sendMessage: function () {
@@ -354,10 +359,10 @@
                 let scope = this;
                 checkRequested(value)
                 scope.form["content"] = null;
-                this.sendLoadingMessage();
+                this.sendLoadingMessage("roll");
             },
             attackRoll: function (actionName) {
-                this.sendLoadingMessage()
+                this.sendLoadingMessage("roll")
                 google.script.run
                     .withSuccessHandler(onSuccess)
                     .withFailureHandler(onFailure)
