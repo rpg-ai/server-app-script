@@ -208,7 +208,8 @@ function combat(actionName, rpgSessionId) {
     response.textToCopy = response.textToCopy.concat('You die. GAME OVER')
     //response.combatActions = []
   } else {
-    response.textToCopy = `${response.textToCopy} You remaing hit points are ${playerCharacter.hitPoints}.`
+    response.textToCopy = `${response.textToCopy} Your remaing hit points are ${playerCharacter.hitPoints}.`
+    response.hitPoints = playerCharacter.hitPoints;
   }
 
   updateCharacter(playerCharacter, rpgSessionId)
