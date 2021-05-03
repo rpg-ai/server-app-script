@@ -291,7 +291,7 @@
             <button id="action" class="selected" @click="select('action')">ACTION</button>
             <button id="attack" @click="select('attack')">ATTACK</button>
             <button id="speak" @click="select('speak')">SPEAK</button>
-            <button id="next" @click="select('next')">LEAVE ROOM</button>
+            <button id="story" @click="select('story')">LEAVE ROOM</button>
           </div>
           <div class="container input-container">
             <img class="avatar" src="https://raw.githubusercontent.com/rpg-ai/public/main/images/Avatar.png" alt="Avatar"/>
@@ -324,7 +324,7 @@
                     action: "What do you do?",
                     attack: "How do you attack?",
                     speak: "What do you say?",
-                    next: "How do you leave de room?"
+                    story: "How do you leave de room?"
                   }
                 },
                 messages: [],
@@ -388,7 +388,7 @@
                 app._data.gameInfo.selectedClass = characterClass;
                 app._data.gameInfo.playerHp = response.hitPoints;
                 app._data.gameInfo.playerAc = response.armorClass;
-                app._data.storyPlaceholder = response.nextScene;
+                app._data.formConfigs.placeholders.story = response.nextScene;
                 onSuccess(response)
             })
             .withFailureHandler(onFailure)
@@ -436,6 +436,10 @@
             // messages.pop() removes the the last message from stack, the message with loading gif
             app._data.messages.pop();
             app._data.messages.push(message);
+        }
+
+        if(response.nextScene) {
+           app._data.formConfigs.placeholders.story = response.nextScene;
         }
     }
 

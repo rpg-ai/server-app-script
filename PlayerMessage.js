@@ -28,7 +28,7 @@ function processMessage(message, rpgSessionId) {
   response.instruction = MSG_OOC
   response.textToCopy = ''
 
-  let label = 'ooc'
+  let label = message.type
 
   if(message.type === messageType.ATTACK) {
 
@@ -37,7 +37,6 @@ function processMessage(message, rpgSessionId) {
     // uptading last action to send to use the last action to generate text
     updateLastAction(message.content, rpgSessionId)
 
-    label = 'attack'
     response.textToCopy = MSG_ATTACK
     response.combatActions = getCombatActions(findCharacter(rpgSessionId).characterClass, rpgSessionId)
 
@@ -46,7 +45,6 @@ function processMessage(message, rpgSessionId) {
   }
 
   if (message.type === messageType.SPEAK) {
-    label = 'speak'
 
     // AI Response
     response.textToCopy = generateText(`${rpgSession.quest} You are in ${questScene.place} ${questScene.secret} ${currentScene.text}`, 
@@ -55,7 +53,6 @@ function processMessage(message, rpgSessionId) {
   }
 
   if (message.type === messageType.STORY) {
-    label = 'history'
 
     const questSceneId = currentScene.questSceneId + 1
     const newScene = findQuestScene(questSceneId)
@@ -65,14 +62,14 @@ function processMessage(message, rpgSessionId) {
 
     updateSessionScene(sceneId, rpgSessionId)
     response.textToCopy = newScene.description
-    response.nextScene = newScene.nextScene
+    response.nextScene = newScene.nextSceneCondition
   }
 
-  if (message.type !== messageType.ACTION) {
     // Saving in the player messages sheet
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('player_messages')
     sheet.appendRow([Date.now(), new Date().toLocaleString('pt-br'), String(message.content),  rpgSession.userId, label])
 
+  if (message.type !== messageType.ACTION) {
     return response
   }
 
