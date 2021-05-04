@@ -275,6 +275,7 @@
                 <div v-else class="message dm-message">
                     <span class="title">{{ message.sender }}</span> <span class="subtitle">{{ message.type }}</span>
                     <p v-if="message.loading" style="margin: 0;">
+                        {{message}}
                         <img src="https://cdn.discordapp.com/attachments/814609860074930186/837471261968826368/AnotherFlamboyantCobra-size_restricted.gif" alt="loading content" style="width: 70px;" v-if="message.loadingType === 'roll'" />
                         <img src="https://raw.githubusercontent.com/rpg-ai/public/main/images/Pulse-1s-200px-transp.gif" alt="loading content" style="width: 70px;" v-else />
                     </p>
@@ -302,152 +303,148 @@
 </div>
 </body>
 <script type="text/javascript">
-  let rpgSessionId = <?= rpgSessionId ?>;
-  let app = new Vue({
-    el: '#rpgai',
-    data: function () {
-      return {
-        gameInfo: {
-          difficulty: 10,
-          selectedClass: null,
-          playerHp: null,
-          playerAc: null,
-        },
-        form: {
-          content: null,
-          type: "action",
-        },
-        formConfigs: {
-          placeholders: {
-            action: "What do you do?",
-            attack: "How do you attack?",
-            speak: "What do you say?",
-            story: "How do you leave de room?"
-          }
-        },
-        messages: [],
-      }
-    },
-    methods: {
-      sendLoadingMessage: function (type) {
-        let scope = this;
-        let message = {
-            sender: "master",
-            loading: true,
-        };
-        if (type) {message["loadingType"] = type}
-        scope.messages.push(message);
-      },
-      sendMessage: function () {
-        let scope = this;
-        const playerAction = {
-          sender: "player",
-          content: scope.form.content,
-          type: scope.form.type,
-        }
-        scope.messages.push(playerAction);
-        if (scope.form.type == 'attack') {
-          this.sendLoadingMessage("roll");
-        } else { this.sendLoadingMessage() }
+    let rpgSessionId = <?= rpgSessionId ?>
 
-        sendMessageToBackend(playerAction);
-        // Clear the message text input
-        scope.form["content"] = null;
-      },
-      sendRollResult: function (value) {
-        let scope = this;
-        checkRequested(value)
-        scope.form["content"] = null;
-        this.sendLoadingMessage("roll");
-      },
-      attackRoll: function (actionName) {
-        this.sendLoadingMessage("roll")
+    let app = new Vue({
+        el: '#rpgai',
+        data: function () {
+            return {
+                gameInfo: {
+                    difficulty: 10,
+                    selectedClass: null,
+                    playerHp: null,
+                    playerAc: null,
+                },
+                form: {
+                    content: null,
+                    type: "action",
+                },
+                formConfigs: {
+                  placeholders: {
+                    action: "What do you do?",
+                    attack: "How do you attack?",
+                    speak: "What do you say?",
+                    story: "How do you leave de room?"
+                  }
+                },
+                messages: [],
+            }
+        },
+        methods: {
+            sendLoadingMessage: function (type) {
+                let scope = this;
+                let message = {
+                    sender: "master",
+                    loading: true,
+                };
+                if (type) {
+                    message["loadingType"] = type;
+                }
+                scope.messages.push(message);
+            },
+            sendMessage: function () {
+                let scope = this;
+                const playerAction = {
+                    sender: "player",
+                    content: scope.form.content,
+                    type: scope.form.type,
+                }
+                scope.messages.push(playerAction);
+                this.sendLoadingMessage();
+                sendMessageToBackend(playerAction);
+                // Clear the message text input
+                scope.form["content"] = null;
+            },
+            sendRollResult: function (value) {
+                let scope = this;
+                checkRequested(value)
+                scope.form["content"] = null;
+                this.sendLoadingMessage("roll");
+            },
+            attackRoll: function (actionName) {
+                this.sendLoadingMessage("roll")
+                google.script.run
+                    .withSuccessHandler(onSuccess)
+                    .withFailureHandler(onFailure)
+                    .attackController(actionName, rpgSessionId)
+            },
+            select: function (button) {
+              let scope = this;
+              document.getElementById(scope.form.type).className = document.getElementById(scope.form.type).className.replace( /(?:^|\s)selected(?!\S)/g , '' )
+              scope.form.type = button;
+              document.getElementById(button).className += " selected";
+            }
+        },
+
+    });
+
+    function generateRPGSession(characterClass) {
+        document.getElementById("characterClass").innerHTML = ''
+        const loadingHtml = `<img src="https://raw.githubusercontent.com/rpg-ai/public/main/images/gear-transp.gif" alt="loading content" style="width: 100px;">`
+        document.getElementById("characterClass").innerHTML += loadingHtml
+
         google.script.run
-          .withSuccessHandler(onSuccess)
-          .withFailureHandler(onFailure)
-          .attackController(actionName, rpgSessionId)
-      },
-      select: function (button) {
-        let scope = this;
-        document.getElementById(scope.form.type).className = document.getElementById(scope.form.type).className.replace( /(?:^|\s)selected(?!\S)/g , '' )
-        scope.form.type = button;
-        document.getElementById(button).className += " selected";
-      }
-    },
-  });
-
-  function generateRPGSession(characterClass) {
-    document.getElementById("characterClass").innerHTML = ''
-    const loadingHtml = `<img src="https://raw.githubusercontent.com/rpg-ai/public/main/images/gear-transp.gif" alt="loading content" style="width: 100px;">`
-    document.getElementById("characterClass").innerHTML += loadingHtml
-
-    google.script.run
-      .withSuccessHandler(response => {
-        app._data.gameInfo.selectedClass = characterClass;
-        app._data.gameInfo.playerHp = response.hitPoints;
-        app._data.gameInfo.playerAc = response.armorClass;
-        app._data.formConfigs.placeholders.story = response.nextScene;
-        onSuccess(response)
-      })
-      .withFailureHandler(onFailure)
-      .rpgSessionController(characterClass, rpgSessionId)
-  }
-
-  google.script.run
-    .withSuccessHandler(response => {
-      let characterClassArray = response;
-
-      characterClassArray.forEach( characterClass => {
-        const buttonHtml = `<button value="${characterClass}" onclick="generateRPGSession(this.value)">${characterClass}</button>`
-        document.getElementById("characterClass").innerHTML += buttonHtml
-      })
-    })
-    .withFailureHandler(onFailure)
-    .characterClassController()
-
-  function sendMessageToBackend(playerAction) {
-    google.script.run
-      .withSuccessHandler(onSuccess)
-      .withFailureHandler(onFailure)
-      .messageController(playerAction, rpgSessionId)
-  }
-
-  function checkRequested(checkValue) {
-    google.script.run
-      .withSuccessHandler(onSuccess)
-      .withFailureHandler(onFailure)
-      .checkController(checkValue, rpgSessionId)
-  }
-
-  function onSuccess(response) {
-    if(response.textToCopy) {
-      let message = {
-        sender: "master",
-        type: "story",
-        content: response.textToCopy,
-        predictions: response.predictions,
-        combatActions: response.combatActions
-      };
-      if (message.predictions) {
-        message.type = "check request"
-      };
-
-      if (response.hitPoints) {
-        app._data.gameInfo.playerHp = response.hitPoints;
-      };
-
-      // messages.pop() removes the the last message from stack, the message with loading gif
-      app._data.messages.pop();
-      app._data.messages.push(message);
+            .withSuccessHandler(response => {
+                app._data.gameInfo.selectedClass = characterClass;
+                app._data.gameInfo.playerHp = response.hitPoints;
+                app._data.gameInfo.playerAc = response.armorClass;
+                app._data.formConfigs.placeholders.story = response.nextScene;
+                onSuccess(response)
+            })
+            .withFailureHandler(onFailure)
+            .rpgSessionController(characterClass, rpgSessionId)
     }
 
-    if(response.nextScene) {
-       app._data.formConfigs.placeholders.story = response.nextScene;
-    }
-  }
+    google.script.run
+        .withSuccessHandler(response => {
+            let characterClassArray = response
 
-  function onFailure(e){
-    alert(`Something went wrong. ${e}`)
-  }
+            characterClassArray.forEach( characterClass => {
+                const buttonHtml = `<button value="${characterClass}" onclick="generateRPGSession(this.value)">${characterClass}</button>`
+                document.getElementById("characterClass").innerHTML += buttonHtml
+            })
+        })
+        .withFailureHandler(onFailure)
+        .characterClassController()
+
+    function sendMessageToBackend(playerAction) {
+        google.script.run
+            .withSuccessHandler(onSuccess)
+            .withFailureHandler(onFailure)
+            .messageController(playerAction, rpgSessionId)
+    }
+
+    function checkRequested(checkValue) {
+        google.script.run
+            .withSuccessHandler(onSuccess)
+            .withFailureHandler(onFailure)
+            .checkController(checkValue, rpgSessionId)
+    }
+
+    function onSuccess(response) {
+        if(response.textToCopy) {
+            let message = {
+                sender: "master",
+                type: "story",
+                content: response.textToCopy,
+                predictions: response.predictions,
+                combatActions: response.combatActions
+            };
+            if (message.predictions) {
+                message.type = "check request"
+            };
+            // messages.pop() removes the the last message from stack, the message with loading gif
+            app._data.messages.pop();
+            app._data.messages.push(message);
+        }
+
+        if(response.nextScene) {
+           app._data.formConfigs.placeholders.story = response.nextScene;
+        }
+    }
+
+    function onFailure(e){
+        alert(`Something went wrong. ${e}`)
+    }
 </script>
 </html>
