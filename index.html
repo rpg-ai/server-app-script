@@ -1,450 +1,453 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <base target="_top">
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>RPG AI</title>
-    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RPG AI</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
 
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
-        body {
-            background-color: #ffffff;
-        }
+    body {
+      background-color: #ffffff;
+    }
 
-        button {
-          cursor: pointer;
-        }
+    button {
+      cursor: pointer;
+    }
 
-        button:focus {
-            outline: none;
-        }
+    button:focus {
+      outline: none;
+    }
 
-        input:focus {
-            outline: none;
-        }
+    input:focus {
+      outline: none;
+    }
 
-        .class-menu {
-            width: 100vmax;
-            height: 100vh;
-            background-color: #414153;
-            margin: -8px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+    .class-menu {
+      width: 100vmax;
+      height: 100vh;
+      background-color: #414153;
+      margin: -8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-        .class-menu button {
-            height: 40px;
-            margin: 0 10px 0 10px;
-            padding: 0 10px 0 10px;
-            font: 500 1.5rem 'Poppins', sans-serif;
-            border: none;
-            border-radius: 5px;
-            background-color: #707090;
-            color: white;
-            cursor: pointer;
-            transition: background-color 0.5s;
-        }
+    .class-menu button {
+      height: 40px;
+      margin: 0 10px 0 10px;
+      padding: 0 10px 0 10px;
+      font: 500 1.5rem 'Poppins', sans-serif;
+      border: none;
+      border-radius: 5px;
+      background-color: #707090;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.5s;
+    }
 
-        .class-menu button:hover {
-            background-color: #9a9ac5;
-        }
+    .class-menu button:hover {
+      background-color: #9a9ac5;
+    }
 
-        .chat-header {
-            position: fixed;
-            left: 0;
-            top: 0;
+    .chat-header {
+      position: fixed;
+      left: 0;
+      top: 0;
 
-            background-color: #ebebeb;
-            border-bottom: solid 1px #474747;
+      background-color: #ebebeb;
+      border-bottom: solid 1px #474747;
 
-            height: 70px;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-content: center;
-            align-items: center;
-        }
+      height: 70px;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-content: center;
+      align-items: center;
+    }
 
-        .chat-header .rpgai-logo {
-            cursor: pointer;
-            display: flex;
-        }
+    .chat-header .rpgai-logo {
+      cursor: pointer;
+      display: flex;
+    }
 
-        .chat-header .rpgai-logo span {
-            font: bold 1.5rem 'Poppins', sans-serif;
-            align-self: center;
-        }
+    .chat-header .rpgai-logo span {
+      font: bold 1.5rem 'Poppins', sans-serif;
+      align-self: center;
+    }
 
-        .chat-header .rpgai-logo img {
-            width: 58px;
-            align-self: center;
-        }
+    .chat-header .rpgai-logo img {
+      width: 58px;
+      align-self: center;
+    }
 
-        .chat-header .game-info {
-            display: flex;
-            flex-direction: column;
-            margin-right: 10px;
-        }
+    .chat-header .game-info {
+      display: flex;
+      flex-direction: column;
+      margin-right: 10px;
+    }
 
-        .chat-header .game-info * {
-            font: 400 1.2rem 'Poppins', sans-serif;
-        }
+    .chat-header .game-info * {
+      font: 400 1.2rem 'Poppins', sans-serif;
+    }
 
-        .messages-container {
-            padding-bottom: 145px;
-            margin-top: 75px;
-        }
+    .messages-container {
+      padding-bottom: 145px;
+      margin-top: 75px;
+    }
 
-        .messages {
-            display: flex;
-            margin: 10px 10px 0 10px;
-        }
+    .messages {
+      display: flex;
+      margin: 10px 10px 0 10px;
+    }
 
-        .messages.right {
-            justify-content: flex-end;
-        }
+    .messages.right {
+      justify-content: flex-end;
+    }
 
-        .messages.left {
-            justify-content: flex-start;
-        }
+    .messages.left {
+      justify-content: flex-start;
+    }
 
-        .messages * {
-            font: 400 1.3rem 'Poppins', sans-serif;
-        }
+    .messages * {
+      font: 400 1.3rem 'Poppins', sans-serif;
+    }
 
-        .message {
-            width: 70%;
-            padding: 10px 20px;
-            border-radius: 15px;
-            margin-bottom: 5px;
-        }
+    .message {
+      width: 70%;
+      padding: 10px 20px;
+      border-radius: 15px;
+      margin-bottom: 5px;
+    }
 
-        .player-message {
-            background-color: #e5e5e5;
-        }
+    .player-message {
+      background-color: #e5e5e5;
+    }
 
-        .dm-message {
-            background-color: #d3d3d3;
-        }
+    .dm-message {
+      background-color: #d3d3d3;
+    }
 
-        .message .title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-left: -10px;
-        }
+    .message .title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-left: -10px;
+    }
 
-        .message .subtitle {
-            font-size: 0.9rem;
-            font-weight: 500;
-            margin-left: 5px;
-        }
+    .message .subtitle {
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-left: 5px;
+    }
 
-        .message p {
-            margin-top: 5px;
-            white-space: pre-wrap;
-        }
+    .message p {
+      margin-top: 5px;
+      white-space: pre-wrap;
+    }
 
-        .roll-button {
-            height: 40px;
-            margin: 0 0 0 10px;
-            padding: 0 10px;
-            font: 500 1.5rem 'Poppins', sans-serif;
-            border: none;
-            border-radius: 5px;
-            background-color: #414153;
-            color: white;
-            cursor: pointer;
-            transition: background-color 0.5s;
-        }
+    .roll-button {
+      height: 40px;
+      margin: 0 0 0 10px;
+      padding: 0 10px;
+      font: 500 1.5rem 'Poppins', sans-serif;
+      border: none;
+      border-radius: 5px;
+      background-color: #414153;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.5s;
+    }
 
-        .roll-button:hover {
-            background-color: #535369;
-        }
+    .roll-button:hover {
+      background-color: #535369;
+    }
 
-        .chat-footer {
-          position: fixed;
-          left: 0;
-          bottom: 0;
-          width: 100%
-        }
+    .chat-footer {
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      width: 100%
+    }
 
-        .container {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          height: 70px;
-        }
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 70px;
+    }
 
-        .buttons-container {
-          background-color: #707090;
-        }
+    .buttons-container {
+      background-color: #707090;
+    }
 
-        .buttons-container > button {
-          height: 45px;
-          width: 220px;
-          border-radius: 8px;
-          border: solid 4px white;
-          background-color: transparent;
-          color: white;
-          font: 700 24px 'Raleway';
-          margin: 0 8px;
-          transition: background-color 0.3s;
-        }
+    .buttons-container > button {
+      height: 45px;
+      width: 220px;
+      border-radius: 8px;
+      border: solid 4px white;
+      background-color: transparent;
+      color: white;
+      font: 700 24px 'Raleway';
+      margin: 0 8px;
+      transition: background-color 0.3s;
+    }
 
-        .buttons-container > button:hover {
-          background-color: #9696b5;
-        }
+    .buttons-container > button:hover {
+      background-color: #9696b5;
+    }
 
-        .buttons-container > button.selected {
-          background-color: #fff;
-          color: #707090;
-        }
+    .buttons-container > button.selected {
+      background-color: #fff;
+      color: #707090;
+    }
 
-        .input-container {
-          background-color: #e5e5e5;
-        }
+    .input-container {
+      background-color: #e5e5e5;
+    }
 
-        @media (min-width: 1465px) {
-            .input-container > .avatar {
-                display: block !important;
-                position: fixed;
-                left: 70px;
-                bottom: 0;
-                width: 132px;
-            }
-        }
+    @media (min-width: 1465px) {
+      .input-container > .avatar {
+        display: block !important;
+        position: fixed;
+        left: 70px;
+        bottom: 0;
+        width: 132px;
+      }
+    }
 
-        .input-container > .avatar {
-            display: none;
-        }
+    .input-container > .avatar {
+      display: none;
+    }
 
-        .input-container > input {
-          height: 50px;
-          width: 930px;
-          font: 300 22px 'Poppins';
-          border-radius: 8px;
-          border: none;
-          padding: 0 10px;
-        }
+    .input-container > input {
+      height: 50px;
+      width: 930px;
+      font: 300 22px 'Poppins';
+      border-radius: 8px;
+      border: none;
+      padding: 0 10px;
+    }
 
-        .input-container > button {
-          position: fixed;
-          margin-left: 885px;
-          border-radius: 50%;
-          height: 40px;
-          width: 40px;
-          background-color: #707090;
-          border: none;
-          transition: background-color 0.3s;
-        }
+    .input-container > button {
+      position: fixed;
+      margin-left: 885px;
+      border-radius: 50%;
+      height: 40px;
+      width: 40px;
+      background-color: #707090;
+      border: none;
+      transition: background-color 0.3s;
+    }
 
-        .input-container > button:hover {
-          background-color: #9696b5;
-        }
-    </style>
+    .input-container > button:hover {
+      background-color: #9696b5;
+    }
+  </style>
 </head>
 <body id="body">
 <div id="rpgai" class="rpgai-chat">
-    <!-- Select Character Class Div -->
-    <div v-if="gameInfo.selectedClass === null" id="characterClass" class="class-menu">
+  <!-- Select Character Class Div -->
+  <div v-if="gameInfo.selectedClass === null" id="characterClass" class="class-menu">
 
+  </div>
+  <div v-else>
+    <div class="chat-header">
+      <a class="rpgai-logo">
+        <img src="https://raw.githubusercontent.com/rpg-ai/public/main/images/logo.png" alt="logo"/>
+        <span>RPG AI</span>
+      </a>
+      <div class="game-info">
+        <span>HP: {{ gameInfo.playerHp }}</span>
+        <span>AC: {{ gameInfo.playerAc }}</span>
+      </div>
     </div>
-    <div v-else>
-        <div class="chat-header">
-            <a class="rpgai-logo">
-                <img src="https://raw.githubusercontent.com/rpg-ai/public/main/images/logo.png" alt="logo"/>
-                <span>RPG AI</span>
-            </a>
-            <div class="game-info">
-                <span>HP: {{ gameInfo.playerHp }}</span>
-                <span>AC: {{ gameInfo.playerAc }}</span>
-            </div>
+    <div class="messages-container">
+      <div v-for="message in messages" class="messages" v-bind:class="{'right': message.sender === 'player', 'left': message.sender !== 'player'}">
+        <div v-if="message.sender === 'player'" class="message player-message">
+          <span class="title">{{ message.sender }}</span> <span class="subtitle">{{ message.type }}</span>
+          <p>{{ message.content }}</p>
         </div>
-        <div class="messages-container">
-            <div v-for="message in messages" class="messages" v-bind:class="{'right': message.sender === 'player', 'left': message.sender !== 'player'}">
-                <div v-if="message.sender === 'player'" class="message player-message">
-                    <span class="title">{{ message.sender }}</span> <span class="subtitle">{{ message.type }}</span>
-                    <p>{{ message.content }}</p>
-                </div>
-                <div v-else class="message dm-message">
-                    <span class="title">{{ message.sender }}</span> <span class="subtitle">{{ message.type }}</span>
-                    <p v-if="message.loading" style="margin: 0;">
-                        {{message}}
-                        <img src="https://cdn.discordapp.com/attachments/814609860074930186/837471261968826368/AnotherFlamboyantCobra-size_restricted.gif" alt="loading content" style="width: 70px;" v-if="message.loadingType === 'roll'" />
-                        <img src="https://raw.githubusercontent.com/rpg-ai/public/main/images/Pulse-1s-200px-transp.gif" alt="loading content" style="width: 70px;" v-else />
-                    </p>
-                    <p v-else>{{ message.content }}</p>
-                    <button v-for="button in message.predictions" @click="sendRollResult(button.value)" class="roll-button">{{ button.label }}</button>
-                    <button v-for="button in message.combatActions" @click="attackRoll(button.name)" class="roll-button">{{ button.name }}</button>
-                </div>
-            </div>
+        <div v-else class="message dm-message">
+          <span class="title">{{ message.sender }}</span> <span class="subtitle">{{ message.type }}</span>
+          <p v-if="message.loading" style="margin: 0;">
+            <img src="https://cdn.discordapp.com/attachments/814609860074930186/837471261968826368/AnotherFlamboyantCobra-size_restricted.gif" alt="loading content" style="width: 70px;" v-if="message.loadingType === 'roll'" />
+            <img src="https://raw.githubusercontent.com/rpg-ai/public/main/images/Pulse-1s-200px-transp.gif" alt="loading content" style="width: 70px;" v-else />
+          </p>
+          <p v-else>{{ message.content }}</p>
+          <button v-for="button in message.predictions" @click="sendRollResult(button.value)" class="roll-button">{{ button.label }}</button>
+          <button v-for="button in message.combatActions" @click="attackRoll(button.name)" class="roll-button">{{ button.name }}</button>
         </div>
+      </div>
+    </div>
 
-        <div class="chat-footer">
-          <div class="container buttons-container">
-            <button id="action" class="selected" @click="select('action')">ACTION</button>
-            <button id="attack" @click="select('attack')">ATTACK</button>
-            <button id="speak" @click="select('speak')">SPEAK</button>
-            <button id="story" @click="select('story')">LEAVE ROOM</button>
-          </div>
-          <div class="container input-container">
-            <img class="avatar" src="https://raw.githubusercontent.com/rpg-ai/public/main/images/Avatar.png" alt="Avatar"/>
-            <input v-model="form.content" :placeholder="formConfigs.placeholders[form.type]" type="text"/>
-            <button @click="sendMessage"><img src="https://raw.githubusercontent.com/rpg-ai/public/main/images/Subtract.png" alt="Send" style="height: 50%; margin-left: 4px;"/></button>
-          </div>
-        </div>
+    <div class="chat-footer">
+      <div class="container buttons-container">
+        <button id="action" class="selected" @click="select('action')">ACTION</button>
+        <button id="attack" @click="select('attack')">ATTACK</button>
+        <button id="speak" @click="select('speak')">SPEAK</button>
+        <button id="story" @click="select('story')">LEAVE ROOM</button>
+      </div>
+      <div class="container input-container">
+        <img class="avatar" src="https://raw.githubusercontent.com/rpg-ai/public/main/images/Avatar.png" alt="Avatar"/>
+        <input v-model="form.content" :placeholder="formConfigs.placeholders[form.type]" type="text"/>
+        <button @click="sendMessage"><img src="https://raw.githubusercontent.com/rpg-ai/public/main/images/Subtract.png" alt="Send" style="height: 50%; margin-left: 4px;"/></button>
+      </div>
     </div>
+  </div>
 </div>
 </body>
 <script type="text/javascript">
-    let rpgSessionId = <?= rpgSessionId ?>
+  let rpgSessionId = <?= rpgSessionId ?>;
+  let app = new Vue({
+  el: '#rpgai',
+  data: function () {
+  return {
+    gameInfo: {
+      difficulty: 10,
+          selectedClass: null,
+          playerHp: null,
+          playerAc: null,
+    },
+    form: {
+      content: null,
+          type: "action",
+    },
+    formConfigs: {
+      placeholders: {
+        action: "What do you do?",
+            attack: "How do you attack?",
+            speak: "What do you say?",
+            story: "How do you leave de room?"
+      }
+    },
+    messages: [],
+  }
+    },
+  methods: {
+    sendLoadingMessage: function (type) {
+      let scope = this;
+      let message = {
+        sender: "master",
+        loading: true,
+      };
+      if (type) {message["loadingType"] = type}
+      scope.messages.push(message);
+    },
+    sendMessage: function () {
+      let scope = this;
+      const playerAction = {
+        sender: "player",
+        content: scope.form.content,
+        type: scope.form.type,
+      }
+      scope.messages.push(playerAction);
+      if (scope.form.type == 'attack') {
+        this.sendLoadingMessage("roll");
+      } else { this.sendLoadingMessage() }
 
-    let app = new Vue({
-        el: '#rpgai',
-        data: function () {
-            return {
-                gameInfo: {
-                    difficulty: 10,
-                    selectedClass: null,
-                    playerHp: null,
-                    playerAc: null,
-                },
-                form: {
-                    content: null,
-                    type: "action",
-                },
-                formConfigs: {
-                  placeholders: {
-                    action: "What do you do?",
-                    attack: "How do you attack?",
-                    speak: "What do you say?",
-                    story: "How do you leave de room?"
-                  }
-                },
-                messages: [],
-            }
-        },
-        methods: {
-            sendLoadingMessage: function (type) {
-                let scope = this;
-                let message = {
-                    sender: "master",
-                    loading: true,
-                };
-                if (type) {
-                    message["loadingType"] = type;
-                }
-                scope.messages.push(message);
-            },
-            sendMessage: function () {
-                let scope = this;
-                const playerAction = {
-                    sender: "player",
-                    content: scope.form.content,
-                    type: scope.form.type,
-                }
-                scope.messages.push(playerAction);
-                this.sendLoadingMessage();
-                sendMessageToBackend(playerAction);
-                // Clear the message text input
-                scope.form["content"] = null;
-            },
-            sendRollResult: function (value) {
-                let scope = this;
-                checkRequested(value)
-                scope.form["content"] = null;
-                this.sendLoadingMessage("roll");
-            },
-            attackRoll: function (actionName) {
-                this.sendLoadingMessage("roll")
-                google.script.run
-                    .withSuccessHandler(onSuccess)
-                    .withFailureHandler(onFailure)
-                    .attackController(actionName, rpgSessionId)
-            },
-            select: function (button) {
-              let scope = this;
-              document.getElementById(scope.form.type).className = document.getElementById(scope.form.type).className.replace( /(?:^|\s)selected(?!\S)/g , '' )
-              scope.form.type = button;
-              document.getElementById(button).className += " selected";
-            }
-        },
-
-    });
-
-    function generateRPGSession(characterClass) {
-        document.getElementById("characterClass").innerHTML = ''
-        const loadingHtml = `<img src="https://raw.githubusercontent.com/rpg-ai/public/main/images/gear-transp.gif" alt="loading content" style="width: 100px;">`
-        document.getElementById("characterClass").innerHTML += loadingHtml
-
-        google.script.run
-            .withSuccessHandler(response => {
-                app._data.gameInfo.selectedClass = characterClass;
-                app._data.gameInfo.playerHp = response.hitPoints;
-                app._data.gameInfo.playerAc = response.armorClass;
-                app._data.formConfigs.placeholders.story = response.nextScene;
-                onSuccess(response)
-            })
-            .withFailureHandler(onFailure)
-            .rpgSessionController(characterClass, rpgSessionId)
+      sendMessageToBackend(playerAction);
+      // Clear the message text input
+      scope.form["content"] = null;
+    },
+    sendRollResult: function (value) {
+      let scope = this;
+      checkRequested(value)
+      scope.form["content"] = null;
+      this.sendLoadingMessage("roll");
+    },
+    attackRoll: function (actionName) {
+      this.sendLoadingMessage("roll")
+      google.script.run
+          .withSuccessHandler(onSuccess)
+          .withFailureHandler(onFailure)
+          .attackController(actionName, rpgSessionId)
+    },
+    select: function (button) {
+      let scope = this;
+      document.getElementById(scope.form.type).className = document.getElementById(scope.form.type).className.replace( /(?:^|\s)selected(?!\S)/g , '' )
+      scope.form.type = button;
+      document.getElementById(button).className += " selected";
     }
+  },
+  });
+
+  function generateRPGSession(characterClass) {
+  document.getElementById("characterClass").innerHTML = ''
+    const loadingHtml = `<img src="https://raw.githubusercontent.com/rpg-ai/public/main/images/gear-transp.gif" alt="loading content" style="width: 100px;">`
+  document.getElementById("characterClass").innerHTML += loadingHtml
 
     google.script.run
-        .withSuccessHandler(response => {
-            let characterClassArray = response
+      .withSuccessHandler(response => {
+        app._data.gameInfo.selectedClass = characterClass;
+        app._data.gameInfo.playerHp = response.hitPoints;
+        app._data.gameInfo.playerAc = response.armorClass;
+        app._data.formConfigs.placeholders.story = response.nextScene;
+        onSuccess(response)
+      })
+      .withFailureHandler(onFailure)
+      .rpgSessionController(characterClass, rpgSessionId)
+  }
 
-            characterClassArray.forEach( characterClass => {
-                const buttonHtml = `<button value="${characterClass}" onclick="generateRPGSession(this.value)">${characterClass}</button>`
-                document.getElementById("characterClass").innerHTML += buttonHtml
-            })
-        })
-        .withFailureHandler(onFailure)
-        .characterClassController()
+  google.script.run
+    .withSuccessHandler(response => {
+      let characterClassArray = response;
 
-    function sendMessageToBackend(playerAction) {
-        google.script.run
-            .withSuccessHandler(onSuccess)
-            .withFailureHandler(onFailure)
-            .messageController(playerAction, rpgSessionId)
-    }
+      characterClassArray.forEach( characterClass => {
+        const buttonHtml = `<button value="${characterClass}" onclick="generateRPGSession(this.value)">${characterClass}</button>`
+  document.getElementById("characterClass").innerHTML += buttonHtml
+  })
+  })
+  .withFailureHandler(onFailure)
+  .characterClassController()
 
-    function checkRequested(checkValue) {
-        google.script.run
-            .withSuccessHandler(onSuccess)
-            .withFailureHandler(onFailure)
-            .checkController(checkValue, rpgSessionId)
-    }
+  function sendMessageToBackend(playerAction) {
+  google.script.run
+  .withSuccessHandler(onSuccess)
+  .withFailureHandler(onFailure)
+  .messageController(playerAction, rpgSessionId)
+  }
 
-    function onSuccess(response) {
-        if(response.textToCopy) {
-            let message = {
-                sender: "master",
-                type: "story",
-                content: response.textToCopy,
-                predictions: response.predictions,
-                combatActions: response.combatActions
-            };
-            if (message.predictions) {
-                message.type = "check request"
-            };
-            // messages.pop() removes the the last message from stack, the message with loading gif
-            app._data.messages.pop();
-            app._data.messages.push(message);
-        }
+  function checkRequested(checkValue) {
+  google.script.run
+  .withSuccessHandler(onSuccess)
+  .withFailureHandler(onFailure)
+  .checkController(checkValue, rpgSessionId)
+  }
 
-        if(response.nextScene) {
-           app._data.formConfigs.placeholders.story = response.nextScene;
-        }
-    }
+  function onSuccess(response) {
+  if(response.textToCopy) {
+  let message = {
+  sender: "master",
+  type: "story",
+  content: response.textToCopy,
+  predictions: response.predictions,
+  combatActions: response.combatActions
+  };
+  if (message.predictions) {
+  message.type = "check request"
+  };
 
-    function onFailure(e){
-        alert(`Something went wrong. ${e}`)
-    }
+  if (response.hitPoints) {
+  app._data.gameInfo.playerHp = response.hitPoints;
+  };
+
+  // messages.pop() removes the the last message from stack, the message with loading gif
+  app._data.messages.pop();
+  app._data.messages.push(message);
+  }
+
+  if(response.nextScene) {
+  app._data.formConfigs.placeholders.story = response.nextScene;
+  }
+  }
+
+  function onFailure(e){
+  alert(`Something went wrong. ${e}`)
+  }
 </script>
 </html>
