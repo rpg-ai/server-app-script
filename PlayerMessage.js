@@ -67,7 +67,7 @@ function processMessage(message, rpgSessionId) {
 
     // Saving in the player messages sheet
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('player_messages')
-    sheet.appendRow([Date.now(), new Date().toLocaleString('pt-br'), String(message.content),  rpgSession.userId, label])
+    sheet.appendRow([Date.now(), new Date().toLocaleString('en-us'), String(message.content),  rpgSession.userId, label, rpgSessionId])
 
   if (message.type !== messageType.ACTION) {
     return response
@@ -146,4 +146,12 @@ function skillPredict(playerName, action){
   sheet.appendRow([Date.now(), new Date().toLocaleString('pt-br'), String(action), JSON.stringify(responseJson.predictions_list), responseJson.run_time, String(playerName)])
 
   return responseJson
+}
+
+function convertDate() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('player_messages')
+  const data = sheet.getDataRange().getValues()
+  for (var i = 1;i < data.length; i++ ) {
+    sheet.getRange(i+1, 2, 1, 1).setValues([[String(new Date(data[i][0]).toLocaleString('en-us'))]])
+  }
 }
