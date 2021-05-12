@@ -24,6 +24,8 @@ function processMessage(message, rpgSessionId) {
 
   const questScene = findQuestScene(currentScene.questSceneId)
 
+  let questSceneId = currentScene.questSceneId
+
   let response = {}
   response.instruction = MSG_OOC
   response.textToCopy = ''
@@ -54,7 +56,7 @@ function processMessage(message, rpgSessionId) {
 
   if (message.type === messageType.STORY) {
 
-    const questSceneId = currentScene.questSceneId + 1
+    questSceneId = currentScene.questSceneId + 1
     const newScene = findQuestScene(questSceneId)
     const sceneId =  saveScene({
       rpgSessionId, userId: rpgSession.userId, text: newScene.encounter, questSceneId, description: newScene.description
@@ -67,7 +69,7 @@ function processMessage(message, rpgSessionId) {
 
     // Saving in the player messages sheet
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('player_messages')
-    sheet.appendRow([Date.now(), new Date().toLocaleString('en-us'), String(message.content),  rpgSession.userId, label, rpgSessionId])
+    sheet.appendRow([Date.now(), new Date().toLocaleString('en-us'), String(message.content),  rpgSession.userId, label, rpgSessionId, questSceneId])
 
   if (message.type !== messageType.ACTION) {
     return response

@@ -64,21 +64,39 @@ function processCheck(checkValue, rpgSessionId) {
   return response
 }
 
-function startGame(selectedClass, rpgSessionId) {
+function startGame(selectedClass, userId) {
+
+  const rpgSessionId = Date.now()
 
   saveCharacter(selectedClass, rpgSessionId)
 
   // 2 is always the first scene number
-  const scene = findQuestScene(2)
+  const questScene = findQuestScene(2)
+
+  const sceneId =  saveScene({
+    rpgSessionId, userId, text: questScene.encounter, questSceneId: 2, description: questScene.description
+  })
 
   const quest = `The last of the Kai Lords assigns you the mission to take the legendary Moonstone to Elzian—the principal city of the jungle realm of Dessi. There you are to seek out Lord Rimoah at the Tower of Truth.`
 
-  const gameSettings = `${quest}\nYou are in ${scene.place} ${scene.description}`
+  session = {
+    rpgSessionId, 
+    startedOn: new Date().toLocaleString('pt-br'),
+    quest: String(quest),
+    difficultyClass: difficultyClass(),
+    sceneId,
+    userId
+  }
+
+  // Saving the game
+  saveSession(session)
+
+  const gameSettings = `${quest}\nYou are in ${questScene.place} ${questScene.description}`
 
   return {
     instruction: '',
     textToCopy: gameSettings.concat('\n\nWhat do you do?'),
-    nextScene: scene.nextSceneCondition,
+    nextScene: questScene.nextSceneCondition,
     rpgSessionId,
     hitPoints: findCharacter(rpgSessionId).hitPoints,
     armorClass: getCharacterClassByName(selectedClass).armorClass

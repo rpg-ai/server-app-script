@@ -303,7 +303,8 @@
 </div>
 </body>
 <script type="text/javascript">
-  let rpgSessionId = <?= rpgSessionId ?>;
+  const userId = <?= userId ?>;
+  let rpgSessionId = ''
   let app = new Vue({
   el: '#rpgai',
   data: function () {
@@ -384,6 +385,7 @@
 
     google.script.run
       .withSuccessHandler(response => {
+        rpgSessionId = response.rpgSessionId
         app._data.gameInfo.selectedClass = characterClass;
         app._data.gameInfo.playerHp = response.hitPoints;
         app._data.gameInfo.playerAc = response.armorClass;
@@ -391,12 +393,12 @@
         onSuccess(response)
       })
       .withFailureHandler(onFailure)
-      .rpgSessionController(characterClass, rpgSessionId)
+      .rpgSessionController(characterClass,userId)
   }
 
-  const userId = <?= userId ?>
-
   <? if (continueGame) { ?>
+
+    rpgSessionId = <?= rpgSessionId ?>
 
     google.script.run
       .withSuccessHandler(response => {

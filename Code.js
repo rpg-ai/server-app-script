@@ -16,32 +16,7 @@ function doGet(e) {
   }
 
   htmlOutput.continueGame = false
-  htmlOutput.response = {}
-
-  const rpgSessionId = Date.now()
-
-  const quest = `The last of the Kai Lords assigns you the mission to take the legendary Moonstone to Elzian—the principal city of the jungle realm of Dessi. There you are to seek out Lord Rimoah at the Tower of Truth.`
-
-  const questScene = findQuestScene(2)
-
-  const sceneId =  saveScene({
-    rpgSessionId, userId, text: questScene.encounter, questSceneId: 2, description: questScene.description
-  })
-
-  session = {
-    rpgSessionId, 
-    startedOn: new Date().toLocaleString('pt-br'),
-    quest: String(quest),
-    //encounter: findScene(2).encounter,
-    difficultyClass: difficultyClass(),
-    sceneId,
-    userId
-  }
-
-  // Saving the game
-  saveSession(session)
-
-  htmlOutput.rpgSessionId = rpgSessionId
+  
   return htmlOutput.evaluate()
 }
 
@@ -68,9 +43,9 @@ function checkController(checkValue, rpgSessionId) {
   return processCheck(checkValue, rpgSessionId)
 }
 
-function rpgSessionController(selectedClass, rpgSessionId) {
+function rpgSessionController(selectedClass, userId) {
   // GameMechanics.gs
-  return startGame(selectedClass, rpgSessionId)
+  return startGame(selectedClass, userId)
 }
 
 function characterClassController() {
