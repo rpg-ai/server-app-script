@@ -17,6 +17,7 @@ function generateTextWrap(seed){
   }
 }
 
+// Deprecated
 function generateText(seed) {
 
   const options = {
@@ -107,7 +108,7 @@ function generateText(seed, playerMessage, sceneId, numberOfSetences) {
 
   const scene = findScene(sceneId)
 
-  updateEncounter(`${scene.text} ${playerMessage} ${myResponse.trim()}`, sceneId)
+  updateScene(`${scene.text} ${playerMessage} ${myResponse.trim()}`, sceneId, `${scene.description} ${playerMessage} ${myResponse.trim()}`)
   
   return myResponse.trim()
 }

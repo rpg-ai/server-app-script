@@ -50,7 +50,7 @@ function processCheck(checkValue, rpgSessionId) {
   const currentScene = findScene(rpgSession.scene)
 
   const questScene = findQuestScene(currentScene.questSceneId)
-
+  
   if (checkValue >= rpgSession.difficultyClass) {
     // AI Response
     response.textToCopy = `You roll a ${checkValue}.\n${generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} You successfully ${rpgSession.lastAction} and`, 
@@ -88,7 +88,7 @@ function startGame(selectedClass, rpgSessionId) {
 function difficultyClass() {
 
   const difficultyClassNumber = Math.floor(Math.random() * 1000) + 10
-
+  
   if(difficultyClassNumber <= 475){
     return taskDifficulty.VERY_EASY
   }
@@ -111,7 +111,7 @@ function difficultyClass() {
 
   // difficultyClassNumber <= 1000
   return taskDifficulty.NEARLY_IMPOSSIBLE
-
+  
 }
 
 function combat(actionName, rpgSessionId) {
@@ -126,14 +126,14 @@ function combat(actionName, rpgSessionId) {
 
   const charactherClass = getCharacterClassByName(playerCharacter.characterClass)
 
-  // hardcoded fighter attack action
+  // hardecoded figther attack action
   const combatAction = FIGTHER.combatActions.filter( action => actionName.includes(action.name))[0]
 
-  const response = {}
+  const response = {} 
 
   const rpgSession = findSession(rpgSessionId)
 
-  const currentScene = findScene(rpgSession.scene)
+  let currentScene = findScene(rpgSession.scene)
 
   const questScene = findQuestScene(currentScene.questSceneId)
 
@@ -147,29 +147,30 @@ function combat(actionName, rpgSessionId) {
     updateCharacter(playerCharacter, rpgSessionId)
 
   } else {
-    const attackValue = dice(D20) + combatAction.attackBonus;
+    const attackValue = dice(D20) + combatAction.attackBonus
 
     if( attackValue >= enemyByDifficulty.EASY.armorClass ) {
       enemy.hitPoints = enemy.hitPoints - combatAction.damage
       // AI Response
-      const sucessDescription = generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} You ${rpgSession.lastAction} and`,
-          '', rpgSession.scene, NUMBER_OF_SENTENCES_COMBAT)
-
-      response.textToCopy = `You rolled a ${attackValue} in the attack roll. ${sucessDescription} Damage done is ${combatAction.damage}.\n\n`
+      const sucessDescription = generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} You ${rpgSession.lastAction} and`, 
+      '', rpgSession.scene, NUMBER_OF_SENTENCES_COMBAT)
+    
+      response.textToCopy = `You rolled a ${attackValue} in the attack rol. ${sucessDescription} Damage done is ${combatAction.damage}.\n\n`
       updateEnemy(enemy, rpgSessionId)
 
     } else {
       // AI Response
-      const failureDescription = generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} You fail to ${rpgSession.lastAction} and`,
-          '', rpgSession.scene, NUMBER_OF_SENTENCES_COMBAT)
-      response.textToCopy = `You rolled a ${attackValue} in the attack roll. ${failureDescription}\n\n`
+      const failureDescription = generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} You fail to ${rpgSession.lastAction} and`, 
+      '', rpgSession.scene, NUMBER_OF_SENTENCES_COMBAT)
+      response.textToCopy = `You rolled a ${attackValue} in the attack rol. ${failureDescription}\n\n`
     }
+    currentScene = findScene(rpgSession.scene)
   }
 
   // Check if the enemy died
   if ( enemy.hitPoints <= 0 ) {
-    const enemyDeathDescription = generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} He dies`,
-        '', rpgSession.scene, NUMBER_OF_SENTENCES_ACTION)
+    const enemyDeathDescription = generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} He dies`, 
+      '', rpgSession.scene, NUMBER_OF_SENTENCES_ACTION)
     response.textToCopy = response.textToCopy.concat(enemyDeathDescription)
     enemy.inCombat = false
     updateEnemy(enemy, rpgSessionId)
@@ -191,8 +192,8 @@ function combat(actionName, rpgSessionId) {
   //response.combatActions = getCombatActions(charactherClass.name, rpgSessionId)
 
   if(enemyAttackValue < charactherClass.armorClass) {
-    const enemyFailureDescription = generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} He fails to hit you`,
-        '', rpgSession.scene, NUMBER_OF_SENTENCES_COMBAT)
+    const enemyFailureDescription = generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} He fails to hit you`, 
+      '', rpgSession.scene, NUMBER_OF_SENTENCES_COMBAT)
     response.textToCopy = response.textToCopy.concat(enemyFailureDescription)
 
     return response
@@ -200,18 +201,33 @@ function combat(actionName, rpgSessionId) {
 
   playerCharacter.hitPoints = playerCharacter.hitPoints - enemyByDifficulty.EASY.combatActions[0].damage
 
-  const enemySuccessDescription = generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} He hits you`, '', rpgSession.scene, NUMBER_OF_SENTENCES_COMBAT)
+   const enemySuccessDescription = generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} He hits you`, 
+      '', rpgSession.scene, NUMBER_OF_SENTENCES_COMBAT)
 
   response.textToCopy = `${response.textToCopy} ${enemySuccessDescription} Damage taken is ${enemyByDifficulty.EASY.combatActions[0].damage}.\n\n`
-
+  
   if(playerCharacter.hitPoints <= 0) {
     response.textToCopy = response.textToCopy.concat('You die. GAME OVER')
     //response.combatActions = []
   } else {
-    response.textToCopy = `${response.textToCopy} Your remaing hit points are ${playerCharacter.hitPoints}.`
-    response.hitPoints = playerCharacter.hitPoints;
+    response.textToCopy = `${response.textToCopy} You remaing hit points are ${playerCharacter.hitPoints}.`
   }
 
   updateCharacter(playerCharacter, rpgSessionId)
   return response
+}
+
+function continueGame(userId) {
+
+  const user = findUser(userId)
+  const scene = findScene(user.lastSceneId)
+
+  return {
+    textToCopy: scene.description.concat('\n\nWhat do you do?'),
+    nextScene: findQuestScene(scene.questSceneId).nextSceneCondition,
+    rpgSessionId: scene.rpgSessionId,
+    hitPoints: findCharacter(scene.rpgSessionId).hitPoints,
+    armorClass: getCharacterClassByName(FIGTHER.name).armorClass
+  }
+
 }

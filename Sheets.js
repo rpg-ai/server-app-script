@@ -62,7 +62,7 @@ function updateLastAction(action, rpgSessionId) {
   range.setValues([[String(action), String(Date.now())]])
 }
 
-function updateEncounter(encounter, sceneId) {
+function updateScene(encounter, sceneId, description) {
   const rpgSessionSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('scene')
 
   // Sheet row number corresponding to the session
@@ -73,6 +73,9 @@ function updateEncounter(encounter, sceneId) {
 
   // Updating values in the sheet
   range.setValues([[String(encounter)]])
+
+  const sceneDescription = rpgSessionSheet.getRange(row, 6, 1, 1)
+  sceneDescription.setValues([[String(description)]])
 }
 
 function saveCharacter(characterClass, rpgSessionId){
@@ -133,6 +136,13 @@ function updateCharacter(playerCharacter, rpgSessionId) {
   range.setValues([[playerCharacter.hitPoints, playerCharacter.spellSlot1, playerCharacter.spellSlot2]])
 }
 
+function saveLastScene(userId, lastSceneId) {
+  const userSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('user')
+  const row = findRow(userSheet, 0, userId)
+  const range = userSheet.getRange(row, 3, 1, 1)
+  range.setValues([[lastSceneId]])
+}
+
 function findEnemy (rpgSessionId){
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('enemy')
   
@@ -179,7 +189,8 @@ function updateEnemy(enemy, rpgSessionId) {
 function saveScene(scene) {
   const sceneId = Date.now()
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('scene')
-  sheet.appendRow([sceneId, scene.rpgSessionId, scene.userId, scene.text, scene.questSceneId])
+  sheet.appendRow([sceneId, scene.rpgSessionId, scene.userId, scene.text, scene.questSceneId, scene.description])
+  saveLastScene(scene.userId, sceneId)
   return sceneId
 }
 
@@ -211,11 +222,28 @@ function findScene(sceneId) {
     rpgSessionId: sceneData[1],
     userId: sceneData[2],
     text: sceneData[3],
-    questSceneId: sceneData[4]
+    questSceneId: sceneData[4],
+    description: sceneData[5]
   }
 }
 
 function saveGeneratedText(objToSave){
    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('generated_text')
   sheet.appendRow([objToSave.id, objToSave.createdAt, objToSave.model, objToSave.inputText, objToSave.outputText, objToSave.sceneId])
+}
+
+function findUser(userId) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('user')
+
+  const row = findRow(sheet, 0, userId)
+  if(!row) {
+    return null
+  }
+
+  const userData = sheet.getSheetValues(row, 1, 1, sheet.getLastColumn() +1).reduce((a, b) => { return a.concat(b) })
+
+  return {
+    name: userData[1],
+    lastSceneId: userData[2],
+  }
 }

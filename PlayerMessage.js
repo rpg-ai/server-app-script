@@ -57,7 +57,7 @@ function processMessage(message, rpgSessionId) {
     const questSceneId = currentScene.questSceneId + 1
     const newScene = findQuestScene(questSceneId)
     const sceneId =  saveScene({
-      rpgSessionId, userId: rpgSession.userId, text: newScene.encounter, questSceneId
+      rpgSessionId, userId: rpgSession.userId, text: newScene.encounter, questSceneId, description: newScene.description
     })
 
     updateSessionScene(sceneId, rpgSessionId)
