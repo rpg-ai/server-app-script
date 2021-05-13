@@ -49,9 +49,11 @@ function processMessage(message, rpgSessionId) {
   if (message.type === messageType.SPEAK) {
 
     // AI Response
-    response.textToCopy = generateText(`${rpgSession.quest} You are in ${questScene.place} ${questScene.secret} ${currentScene.text}`, 
+    const aiResponse = generateText(`${rpgSession.quest} You are in ${questScene.place} ${questScene.secret} ${currentScene.text}`,
       `'${message.content}' you say.`,
       rpgSession.scene, NUMBER_OF_SENTENCES_SPEAK)
+    response.textToCopy = aiResponse.trim;
+    response.messageId = aiResponse.messageId;
   }
 
   if (message.type === messageType.STORY) {
@@ -72,6 +74,7 @@ function processMessage(message, rpgSessionId) {
     sheet.appendRow([Date.now(), new Date().toLocaleString('en-us'), String(message.content),  rpgSession.userId, label, rpgSessionId, questSceneId])
 
   if (message.type !== messageType.ACTION) {
+    Logger.log(`not action: ${response}`)
     return response
   }
 
@@ -98,8 +101,11 @@ function processMessage(message, rpgSessionId) {
   if (checksToAsk.length === 0) {
 
     // AI Response
-    response.textToCopy = generateText(`${rpgSession.quest} You are in ${questScene.place} ${questScene.secret} ${currentScene.text} You ${message.content} and`, 
-      '', rpgSession.scene, NUMBER_OF_SENTENCES_ACTION)
+    const aiResponse = generateText(`${rpgSession.quest} You are in ${questScene.place} ${questScene.secret} ${currentScene.text} You ${message.content} and`,
+    '', rpgSession.scene, NUMBER_OF_SENTENCES_ACTION);
+    response.textToCopy = aiResponse.trim;
+    response.messageId = aiResponse.messageId;
+    Logger.log(`action: ${response}`)
     return response
   }
 

@@ -110,5 +110,10 @@ function generateText(seed, playerMessage, sceneId, numberOfSetences) {
 
   updateScene(`${scene.text} ${playerMessage} ${myResponse.trim()}`, sceneId, `${scene.description} ${playerMessage} ${myResponse.trim()}`)
   
-  return myResponse.trim()
+
+  Logger.log(responseJson.id)
+  return {
+    messageId: responseJson.id,
+    trim: myResponse.trim()
+  }
 }

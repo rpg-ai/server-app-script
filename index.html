@@ -268,13 +268,13 @@
       </div>
     </div>
     <div class="messages-container">
-      <div v-for="message in messages" class="messages" v-bind:class="{'right': message.sender === 'player', 'left': message.sender !== 'player'}">
+      <div v-for="(message, index) in messages" class="messages" v-bind:class="{'right': message.sender === 'player', 'left': message.sender !== 'player'}">
         <div v-if="message.sender === 'player'" class="message player-message">
           <span class="title">{{ message.sender }}</span> <span class="subtitle">{{ message.type }}</span>
           <p>{{ message.content }}</p>
         </div>
         <div v-else class="message dm-message">
-          <span class="title">{{ message.sender }}</span> <span class="subtitle">{{ message.type }}</span>
+          <span class="title">{{ message.sender }}</span> <span class="subtitle">{{ message.type }} <span style="float: right;" v-if="message.type == 'story'"><a @click="giveFeedback('good', message.id)" style="margin-right: 10px;" title="I like this message!">👍</a><a @click="giveFeedback('bad', message.id)" title="I don't like this message!">👎</a></span></span>
           <p v-if="message.loading" style="margin: 0;">
             <img src="https://cdn.discordapp.com/attachments/814609860074930186/837471261968826368/AnotherFlamboyantCobra-size_restricted.gif" alt="loading content" style="width: 70px;" v-if="message.loadingType === 'roll'" />
             <img src="https://raw.githubusercontent.com/rpg-ai/public/main/images/Pulse-1s-200px-transp.gif" alt="loading content" style="width: 70px;" v-else />
@@ -374,6 +374,10 @@
         document.getElementById(scope.form.type).className = document.getElementById(scope.form.type).className.replace( /(?:^|\s)selected(?!\S)/g , '' )
         scope.form.type = button;
         document.getElementById(button).className += " selected";
+      },
+      giveFeedback: function(opinion, messageId) {
+        let scope = this;
+        google.script.run.generatedTextController(messageId, opinion)
       }
     },
   });
@@ -455,7 +459,8 @@
         type: "story",
         content: response.textToCopy,
         predictions: response.predictions,
-        combatActions: response.combatActions
+        combatActions: response.combatActions,
+        id: response.messageId
       }
       if (message.predictions) {
         message.type = "check request"

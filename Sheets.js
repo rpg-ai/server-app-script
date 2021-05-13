@@ -247,3 +247,13 @@ function findUser(userId) {
     lastSceneId: userData[2],
   }
 }
+
+function saveFeedback(messageId, feedback) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('generated_text')
+
+  const row = findRow(sheet, 0, messageId)
+  if (!row) {
+    return null
+  }
+  sheet.getRange(row, sheet.getLastColumn()).setValue(feedback)
+}
