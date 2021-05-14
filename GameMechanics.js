@@ -54,11 +54,11 @@ function processCheck(checkValue, rpgSessionId) {
   if (checkValue >= rpgSession.difficultyClass) {
     // AI Response
     response.textToCopy = `You roll a ${checkValue}.\n${generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} You successfully ${rpgSession.lastAction} and`, 
-      '', rpgSession.scene, NUMBER_OF_SENTENCES_ACTION).trim}`
+      '', rpgSession.scene, NUMBER_OF_SENTENCES_ACTION, messageType.ACTION, rpgSession.userId).trim}`
   } else {
     // AI Response
     response.textToCopy = `You roll a ${checkValue}.\n${generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} You fail to ${rpgSession.lastAction} and`, 
-      '', rpgSession.scene, NUMBER_OF_SENTENCES_ACTION).trim}`
+      '', rpgSession.scene, NUMBER_OF_SENTENCES_ACTION, messageType.ACTION, rpgSession.userId).trim}`
   }
 
   return response
@@ -171,7 +171,7 @@ function combat(actionName, rpgSessionId) {
       enemy.hitPoints = enemy.hitPoints - combatAction.damage
       // AI Response
       const sucessDescription = generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} You ${rpgSession.lastAction} and`, 
-      '', rpgSession.scene, NUMBER_OF_SENTENCES_COMBAT).trim
+      '', rpgSession.scene, NUMBER_OF_SENTENCES_COMBAT, messageType.ATTACK, rpgSession.userId).trim
     
       response.textToCopy = `You rolled a ${attackValue} in the attack rol. ${sucessDescription} Damage done is ${combatAction.damage}.\n\n`
       updateEnemy(enemy, rpgSessionId)
@@ -179,7 +179,7 @@ function combat(actionName, rpgSessionId) {
     } else {
       // AI Response
       const failureDescription = generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} You fail to ${rpgSession.lastAction} and`, 
-      '', rpgSession.scene, NUMBER_OF_SENTENCES_COMBAT).trim
+      '', rpgSession.scene, NUMBER_OF_SENTENCES_COMBAT, messageType.ATTACK, rpgSession.userId).trim
       response.textToCopy = `You rolled a ${attackValue} in the attack rol. ${failureDescription}\n\n`
     }
     currentScene = findScene(rpgSession.scene)
@@ -188,7 +188,7 @@ function combat(actionName, rpgSessionId) {
   // Check if the enemy died
   if ( enemy.hitPoints <= 0 ) {
     const enemyDeathDescription = generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} He dies`, 
-      '', rpgSession.scene, NUMBER_OF_SENTENCES_ACTION).trim
+      '', rpgSession.scene, NUMBER_OF_SENTENCES_ACTION, messageType.ATTACK, rpgSession.userId).trim
     response.textToCopy = response.textToCopy.concat(enemyDeathDescription)
     enemy.inCombat = false
     updateEnemy(enemy, rpgSessionId)
@@ -211,7 +211,7 @@ function combat(actionName, rpgSessionId) {
 
   if(enemyAttackValue < charactherClass.armorClass) {
     const enemyFailureDescription = generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} He fails to hit you`, 
-      '', rpgSession.scene, NUMBER_OF_SENTENCES_COMBAT).trim
+      '', rpgSession.scene, NUMBER_OF_SENTENCES_COMBAT, messageType.ATTACK, rpgSession.userId).trim
     response.textToCopy = response.textToCopy.concat(enemyFailureDescription)
 
     return response
@@ -220,7 +220,7 @@ function combat(actionName, rpgSessionId) {
   playerCharacter.hitPoints = playerCharacter.hitPoints - enemyByDifficulty.EASY.combatActions[0].damage
 
    const enemySuccessDescription = generateText(`You are in ${questScene.place} ${questScene.secret} ${currentScene.text} He hits you`, 
-      '', rpgSession.scene, NUMBER_OF_SENTENCES_COMBAT).trim
+      '', rpgSession.scene, NUMBER_OF_SENTENCES_COMBAT, messageType.ATTACK, rpgSession.userId).trim
 
   response.textToCopy = `${response.textToCopy} ${enemySuccessDescription} Damage taken is ${enemyByDifficulty.EASY.combatActions[0].damage}.\n\n`
   

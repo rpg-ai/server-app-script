@@ -229,7 +229,7 @@ function findScene(sceneId) {
 
 function saveGeneratedText(objToSave){
    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('generated_text')
-  sheet.appendRow([objToSave.id, objToSave.createdAt, objToSave.model, objToSave.inputText, objToSave.outputText, objToSave.sceneId])
+  sheet.appendRow([objToSave.id, objToSave.createdAt, objToSave.model, objToSave.inputText, objToSave.outputText, objToSave.sceneId, objToSave.feedback, objToSave.label, objToSave.userId])
 }
 
 function findUser(userId) {
@@ -255,5 +255,5 @@ function saveFeedback(messageId, feedback) {
   if (!row) {
     return null
   }
-  sheet.getRange(row, sheet.getLastColumn()).setValue(feedback)
+  sheet.getRange(row, 7).setValue(feedback)
 }

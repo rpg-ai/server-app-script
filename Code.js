@@ -40,8 +40,6 @@ function textGenerateController(form) {
 
 function generatedTextController(messageId, feedback) {
   // Sheets.gs
-  Logger.log(messageId)
-  Logger.log(feedback)
   return saveFeedback(messageId, feedback)
 }
 

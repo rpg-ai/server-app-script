@@ -49,9 +49,9 @@ function processMessage(message, rpgSessionId) {
   if (message.type === messageType.SPEAK) {
 
     // AI Response
-    const aiResponse = generateText(`${rpgSession.quest} You are in ${questScene.place} ${questScene.secret} ${currentScene.text}`,
+    const aiResponse = generateText(`${rpgSession.quest} You are in ${questScene.place} ${questScene.secret} ${currentScene.text}`, 
       `'${message.content}' you say.`,
-      rpgSession.scene, NUMBER_OF_SENTENCES_SPEAK)
+      rpgSession.scene, NUMBER_OF_SENTENCES_SPEAK, messageType.SPEAK, rpgSession.userId)
     response.textToCopy = aiResponse.trim;
     response.messageId = aiResponse.messageId;
   }
@@ -101,11 +101,10 @@ function processMessage(message, rpgSessionId) {
   if (checksToAsk.length === 0) {
 
     // AI Response
-    const aiResponse = generateText(`${rpgSession.quest} You are in ${questScene.place} ${questScene.secret} ${currentScene.text} You ${message.content} and`,
-    '', rpgSession.scene, NUMBER_OF_SENTENCES_ACTION);
+    const aiResponse = generateText(`${rpgSession.quest} You are in ${questScene.place} ${questScene.secret} ${currentScene.text} You ${message.content} and`, 
+    '', rpgSession.scene, NUMBER_OF_SENTENCES_ACTION, messageType.ACTION, rpgSession.userId);
     response.textToCopy = aiResponse.trim;
     response.messageId = aiResponse.messageId;
-    Logger.log(`action: ${response}`)
     return response
   }
 

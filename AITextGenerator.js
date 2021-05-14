@@ -57,7 +57,7 @@ function generateText(seed) {
   return myResponse.trim()
 }
 
-function generateText(seed, playerMessage, sceneId, numberOfSetences) {
+function generateText(seed, playerMessage, sceneId, numberOfSetences, label, userId) {
 
   seed = `${seed} ${playerMessage}`.trim()
 
@@ -88,7 +88,9 @@ function generateText(seed, playerMessage, sceneId, numberOfSetences) {
     model: responseJson.model,
     inputText: seed,
     outputText: responseJson.choices[0].text,
-    sceneId
+    sceneId,
+    label,
+    userId
   })
   
   // RegExp for splitting text into sentences and keeping the delimiter
@@ -110,8 +112,6 @@ function generateText(seed, playerMessage, sceneId, numberOfSetences) {
 
   updateScene(`${scene.text} ${playerMessage} ${myResponse.trim()}`, sceneId, `${scene.description} ${playerMessage} ${myResponse.trim()}`)
   
-
-  Logger.log(responseJson.id)
   return {
     messageId: responseJson.id,
     trim: myResponse.trim()
