@@ -38,9 +38,9 @@ function textGenerateController(form) {
   return generateTextWrap(form.textSeed)
 }
 
-function generatedTextController(messageId, feedback) {
+function generatedTextController(message, feedback) {
   // Sheets.gs
-  return saveFeedback(messageId, feedback)
+  return saveFeedback(message, feedback)
 }
 
 function checkController(checkValue, rpgSessionId) {

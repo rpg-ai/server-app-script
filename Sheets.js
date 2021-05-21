@@ -248,12 +248,23 @@ function findUser(userId) {
   }
 }
 
-function saveFeedback(messageId, feedback) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('generated_text')
-
-  const row = findRow(sheet, 0, messageId)
-  if (!row) {
-    return null
+function saveFeedback(message, feedback) {
+  let sheet = null;
+  Logger.log(message.type)
+  if (message.type == 'story') {
+    sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('generated_text');
+    const row = findRow(sheet, 0, message.id);
+    if (!row) {
+      return null
+    }
+    sheet.getRange(row, 7).setValue(feedback);
   }
-  sheet.getRange(row, 7).setValue(feedback)
+  else if (message.type == 'check request') {
+    sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('dnd5e_checks');
+    const row = findRow(sheet, 0, message.predictId);
+    if (!row) {
+      return null
+    }
+    sheet.getRange(row, 7).setValue(feedback)
+  }
 }

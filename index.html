@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" id="root">
 <head>
   <base target="_top">
   <meta charset="utf-8">
@@ -276,7 +276,7 @@
           <p>{{ message.content }}</p>
         </div>
         <div v-else class="message dm-message">
-          <span class="title">{{ message.sender }}</span> <span class="subtitle">{{ message.type }} <span style="float: right;" v-if="message.type == 'story'"><a @click="giveFeedback('good', message.id)" style="margin-right: 10px;" title="I like this message!">👍</a><a @click="giveFeedback('bad', message.id)" title="I don't like this message!">👎</a></span></span>
+          <span class="title">{{ message.sender }}</span> <span class="subtitle">{{ message.type }} <feedback :message="message"></feedback></span>
           <p v-if="message.loading" style="margin: 0;">
             <img src="https://cdn.discordapp.com/attachments/814609860074930186/837471261968826368/AnotherFlamboyantCobra-size_restricted.gif" alt="loading content" style="width: 70px;" v-if="message.loadingType === 'roll'" />
             <img src="https://raw.githubusercontent.com/rpg-ai/public/main/images/Pulse-1s-200px-transp.gif" alt="loading content" style="width: 70px;" v-else />
@@ -297,7 +297,7 @@
       </div>
       <div class="container input-container">
         <img class="avatar" src="https://raw.githubusercontent.com/rpg-ai/public/main/images/Avatar.png" alt="Avatar"/>
-        <input v-model="form.content" :placeholder="formConfigs.placeholders[form.type]" type="text"/>
+        <input v-model="form.content" :placeholder="formConfigs.placeholders[form.type]" type="text" v-on:keyup.enter="sendMessage"/>
         <button @click="sendMessage"><img src="https://raw.githubusercontent.com/rpg-ai/public/main/images/Subtract.png" alt="Send" style="height: 50%; margin-left: 4px;"/></button>
       </div>
     </div>
@@ -306,32 +306,33 @@
 </body>
 <script type="text/javascript">
   const userId = <?= userId ?>;
+  const delay = ms => new Promise(res => setTimeout(res, ms));
   let rpgSessionId = ''
   let app = new Vue({
-  el: '#rpgai',
-  data: function () {
-    return {
-      gameInfo: {
-        difficulty: 10,
-            selectedClass: null,
-            playerHp: null,
-            playerAc: null,
-      },
-      form: {
-        content: null,
-            type: "action",
-      },
-      formConfigs: {
-        placeholders: {
-          action: "What do you do?",
-              attack: "How do you attack?",
-              speak: "What do you say?",
-              story: "How do you leave de room?"
-        }
-      },
-      messages: [],
-    }
-      },
+    el: '#rpgai',
+    data: function () {
+      return {
+        gameInfo: {
+          difficulty: 10,
+              selectedClass: null,
+              playerHp: null,
+              playerAc: null,
+        },
+        form: {
+          content: null,
+              type: "action",
+        },
+        formConfigs: {
+          placeholders: {
+            action: "What do you do?",
+                attack: "How do you attack?",
+                speak: "What do you say?",
+                story: "How do you leave de room?"
+          }
+        },
+        messages: [],
+      }
+    },
     methods: {
       sendLoadingMessage: function (type) {
         let scope = this;
@@ -350,6 +351,7 @@
           type: scope.form.type,
         }
         scope.messages.push(playerAction);
+        
         if (scope.form.type == 'attack') {
           this.sendLoadingMessage("roll");
         } else { this.sendLoadingMessage() }
@@ -382,7 +384,56 @@
         google.script.run.generatedTextController(messageId, opinion)
       }
     },
+    beforeUpdate () {
+      updateScroll();
+    },
   });
+
+  Vue.component('feedback', {
+    props: ['message'],
+    data: function () {
+      return {
+        selected: null,
+      }
+    },
+    methods: {
+      giveFeedback: function(message, opinion) {
+        let scope = this;
+        if (scope.selected) {
+          if (scope.selected == opinion) {
+            scope.selected = null;
+          } else {
+            scope.selected = opinion;
+          }
+        } else {
+          scope.selected = opinion;
+        }
+
+        google.script.run.generatedTextController(message, opinion);
+      }
+    },
+    template: `
+      <div style="float: right; display: flex;">
+        <a style="display: flex; align-items: center; padding: 5px;" @click="giveFeedback(message, 'good')" title="I like this message!">
+          <img v-if="selected == 'good'" style="width: 20px" src="https://raw.githubusercontent.com/rpg-ai/public/main/svg/feedback/fi-sr-thumbs-up.svg"/>
+          <img v-else style="width: 20px" src="https://raw.githubusercontent.com/rpg-ai/public/main/svg/feedback/fi-rr-thumbs-up.svg"/>
+        </a>
+
+        <a v-if="selected == 'bad'" style="display: flex; align-items: center; padding: 5px;" @click="giveFeedback(message, 'bad')" title="I don't like this message!">
+          <img style="width: 20px" src="https://raw.githubusercontent.com/rpg-ai/public/main/svg/feedback/fi-sr-thumbs-down.svg"/>
+        </a>
+        <a v-else style="display: flex; align-items: center; padding: 5px;" @click="giveFeedback(message, 'bad')" title="I don't like this message!">
+          <img style="width: 20px" src="https://raw.githubusercontent.com/rpg-ai/public/main/svg/feedback/fi-rr-thumbs-down.svg"/>
+        </a>
+      </div>
+    `
+  })
+
+  async function updateScroll(){
+    const element = document.getElementById("root");
+    await delay(500)
+    element.scrollTop = element.scrollHeight
+  }
 
   function generateRPGSession(characterClass) {
     document.getElementById("characterClass").innerHTML = ''
@@ -465,6 +516,7 @@
         id: response.messageId
       }
       if (message.predictions) {
+        message.predictId = response.predictId;
         message.type = "check request"
       }
 

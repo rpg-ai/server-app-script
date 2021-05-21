@@ -79,7 +79,9 @@ function processMessage(message, rpgSessionId) {
   }
 
   // rpgai action/check
-  const responseJson = skillPredict(rpgSession.userId, message.content)
+  let skillPredictCheck = skillPredict(rpgSession.userId, message.content)
+  const responseJson = skillPredictCheck[0]
+  const predictId = skillPredictCheck[1]
 
   /* json array of checks where the object key is the skill's name predicted by the model and the value is the confidence
     ex: [{"Investigation": "18.52%"},{"Perception": "12.83%"},{"Stealth": "12.22%"}]
@@ -133,7 +135,7 @@ function processMessage(message, rpgSessionId) {
     }
   })
   response.textToCopy = textToCopy.replace('{skill}', skills)
-
+  response["predictId"] = predictId
   return response
 }
 
@@ -150,9 +152,10 @@ function skillPredict(playerName, action){
 
   // Saving in the checks sheet
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('dnd5e_checks')
-  sheet.appendRow([Date.now(), new Date().toLocaleString('pt-br'), String(action), JSON.stringify(responseJson.predictions_list), responseJson.run_time, String(playerName)])
+  let dateNow = Date.now()
+  sheet.appendRow([dateNow, new Date().toLocaleString('pt-br'), String(action), JSON.stringify(responseJson.predictions_list), responseJson.run_time, String(playerName)])
 
-  return responseJson
+  return [responseJson, dateNow]
 }
 
 function convertDate() {
