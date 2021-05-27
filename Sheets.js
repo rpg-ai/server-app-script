@@ -8,9 +8,19 @@ function findRow(sheet, column, value) {
   return null
 }
 
+function findRowTwoColumns(sheet, column1, value1, column2, value2) {
+  const data = sheet.getDataRange().getValues()
+  for(var i = 0; i<data.length;i++){
+    if(data[i][column1] == value1 && data[i][column2] == value2){
+      return i+1
+    }
+  }
+  return null
+}
+
 function saveSession(session) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('rpg_session')
-  sheet.appendRow([session.rpgSessionId, session.startedOn, session.selectedClass, session.quest, session.encounter, session.difficultyClass, '', '', session.sceneId, session.userId])
+  sheet.appendRow([session.rpgSessionId, session.startedOn, session.selectedClass, session.quest, session.encounter, session.difficultyClass, '', '', session.sceneId, session.userId, session.type])
 }
 
 function findSession (rpgSessionId){
@@ -29,7 +39,8 @@ function findSession (rpgSessionId){
     difficultyClass: rpgSessionData[5],
     lastAction: rpgSessionData[6],
     scene: rpgSessionData[8],
-    userId: rpgSessionData[9]
+    userId: rpgSessionData[9],
+    type: rpgSessionData[10]
   }
 
   return rpgSession
@@ -41,7 +52,7 @@ function updateSessionScene(scene, rpgSessionId) {
 
   // Sheet row number corresponding to the session
   const row = findRow(rpgSessionSheet, 0, rpgSessionId)
-  // acho que esse 7 aqui ta errado
+  
   // Get Range in the sheet at row, column = 8, number of rows = 1, number of columns = 2 (update_at, scene)
   const range = rpgSessionSheet.getRange(row, 8, 1, 2)
 
@@ -194,15 +205,34 @@ function saveScene(scene) {
   return sceneId
 }
 
-function findQuestScene(sceneNumber) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('quest')
-  const sceneData = sheet.getSheetValues(sceneNumber, 1, 1, sheet.getLastColumn()).reduce((a, b) => { return a.concat(b) })
-  const scene = {
-    place: sceneData[0],
-    secret: sceneData[1],
-    encounter: sceneData[2],
-    nextSceneCondition: sceneData[3],
-    description: sceneData[4] 
+function findQuestScene(sceneNumber, currentSessionType, rpgSessionId) {
+
+  let sheet = ''
+  const scene = {}
+
+  if (currentSessionType === sessionType.RANDOM ) {
+
+    sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('generated_scene')
+    // Sheet row number corresponding to the session
+    const row = findRowTwoColumns(sheet, 0, rpgSessionId,1, sceneNumber)
+
+    const sceneData = sheet.getSheetValues(row, 1, 1, sheet.getLastColumn()).reduce((a, b) => { return a.concat(b) })
+
+    scene.place = sceneData[2]
+    scene.secret = ''
+    scene.encounter = sceneData[3]
+    scene.description = sceneData[4]
+    scene.quest = sceneData[5]
+
+  } else {
+    sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('quest')
+    const sceneData = sheet.getSheetValues(sceneNumber, 1, 1, sheet.getLastColumn()).reduce((a, b) => { return a.concat(b) })
+    scene.place = sceneData[0]
+    scene.secret = sceneData[1]
+    scene.encounter = sceneData[2]
+    scene.nextSceneCondition = sceneData[3]
+    scene.description = sceneData[4]
+    scene.quest = `The last of the Kai Lords assigns you the mission to take the legendary Moonstone to Elzian—the principal city of the jungle realm of Dessi. There you are to seek out Lord Rimoah at the Tower of Truth.`
   }
 
   return scene
@@ -225,6 +255,10 @@ function findScene(sceneId) {
     questSceneId: sceneData[4],
     description: sceneData[5]
   }
+}
+
+function saveGeneratedScene(scene) {
+  SpreadsheetApp.getActiveSpreadsheet().getSheetByName('generated_scene').appendRow([scene.rpgSessionId, scene.sceneNumber, scene.place, scene.encounter, scene.description, scene.quest])
 }
 
 function saveGeneratedText(objToSave){
@@ -252,6 +286,7 @@ function saveFeedback(message, feedback) {
   let sheet = null;
   Logger.log(message.type)
   if (message.type == 'story') {
+    Logger.log(message.id)
     sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('generated_text');
     const row = findRow(sheet, 0, message.id);
     if (!row) {

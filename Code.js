@@ -1,10 +1,11 @@
 function doGet(e) {
   const userId = e.parameter.u
-  
+
   const user = findUser(userId)
 
   const htmlOutput = HtmlService.createTemplateFromFile('index')
   htmlOutput.userId = userId
+  htmlOutput.sessionType = e.parameter.st
   
   if (user.lastSceneId) {
     const scene = findScene(user.lastSceneId)
@@ -18,6 +19,15 @@ function doGet(e) {
   htmlOutput.continueGame = false
   
   return htmlOutput.evaluate()
+}
+
+function doPost(e) {
+  const userId = e.parameter.u
+
+  const user = findUser(userId)
+  const result = {hasGame: !!user.lastSceneId}
+  return ContentService.createTextOutput(JSON.stringify(result))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
 /**
@@ -48,9 +58,9 @@ function checkController(checkValue, rpgSessionId) {
   return processCheck(checkValue, rpgSessionId)
 }
 
-function rpgSessionController(selectedClass, userId) {
+function rpgSessionController(selectedClass, userId, selectedSessionType) {
   // GameMechanics.gs
-  return startGame(selectedClass, userId)
+  return startGame(selectedClass, userId, selectedSessionType)
 }
 
 function characterClassController() {

@@ -306,6 +306,7 @@
 </body>
 <script type="text/javascript">
   const userId = <?= userId ?>;
+  const sessionType = <?= sessionType ?>;
   const delay = ms => new Promise(res => setTimeout(res, ms));
   let rpgSessionId = ''
   let app = new Vue({
@@ -342,6 +343,8 @@
         };
         if (type) {message["loadingType"] = type}
         scope.messages.push(message);
+
+        // updateScroll();
       },
       sendMessage: function () {
         let scope = this;
@@ -359,6 +362,8 @@
         sendMessageToBackend(playerAction);
         // Clear the message text input
         scope.form["content"] = null;
+
+        // updateScroll();
       },
       sendRollResult: function (value) {
         let scope = this;
@@ -372,6 +377,7 @@
             .withSuccessHandler(onSuccess)
             .withFailureHandler(onFailure)
             .attackController(actionName, rpgSessionId)
+        // updateScroll();
       },
       select: function (button) {
         let scope = this;
@@ -450,7 +456,7 @@
         onSuccess(response)
       })
       .withFailureHandler(onFailure)
-      .rpgSessionController(characterClass,userId)
+      .rpgSessionController(characterClass, userId, sessionType)
   }
 
   <? if (continueGame) { ?>

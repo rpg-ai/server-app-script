@@ -17,33 +17,35 @@ function generateTextWrap(seed){
   }
 }
 
-// Deprecated
-function generateText(seed) {
+// Used to complete new location
+function completeText(seed) {
+
+  payloadJson = JSON.stringify({
+    prompt: seed,
+    max_tokens: 100, // which are the chunks of text that the API generates one at a time
+    echo: true //  concatenate the prompt and the completion text
+  })
 
   const options = {
     method: "post",
     headers: {
-      "api-key": DEEPAI_API_KEY
+      "Authorization": "Bearer " + OPENAI_API_KEY_2,
+      "Content-Type": "application/json"
     },
-    payload: {
-      text: seed
-    }
+    payload: payloadJson
   }
 
-  // See it in the Executions menu
-  Logger.log('seed text: ' + seed)
-
-  const deepaiResponse = UrlFetchApp.fetch(
-    DEEPAI_API_URL, options
+  const openaiResponse = UrlFetchApp.fetch(
+    OPENAI_API_URL, options
   );
 
-  Logger.log(deepaiResponse)
-  
-  const responseJson = JSON.parse(deepaiResponse.getContentText())
+  Logger.log(openaiResponse)
+
+  const responseJson = JSON.parse(openaiResponse.getContentText())
   
   // RegExp for splitting text into sentences and keeping the delimiter
   const seedSentences = seed.match( /[^\.!\?]+[\.!\?]+/g )
-  const outputSentences = responseJson.output.match( /[^\.!\?]+[\.!\?]+/g )
+  const outputSentences = responseJson.choices[0].text.match( /[^\.!\?]+[\.!\?]+/g )
   
   let myResponse = ''
 
@@ -51,7 +53,7 @@ function generateText(seed) {
     the NUMBER OF SENTENCES after the seed sentences
    */
   outputSentences
-    .filter((sentence, index) => index >= seedSentences.length && index < (seedSentences.length + NUMBER_OF_SENTENCES))
+    .filter((sentence, index) => index < (seedSentences.length + NUMBER_OF_SENTENCES_ACTION))
     .forEach(sentence => myResponse = myResponse.concat(sentence))
   
   return myResponse.trim()

@@ -36,6 +36,11 @@ const enemyByDifficulty = {
   },
 }
 
+const sessionType = {
+  RANDOM: 'random',
+  VOYAGE_OF_THE_MOONSTONE: 'moonstone'
+}
+
 function dice(diceType){
   return Math.floor(Math.random() * diceType) + 1
 }
@@ -49,7 +54,7 @@ function processCheck(checkValue, rpgSessionId) {
 
   const currentScene = findScene(rpgSession.scene)
 
-  const questScene = findQuestScene(currentScene.questSceneId)
+  const questScene = findQuestScene(currentScene.questSceneId, rpgSession.type, rpgSessionId)
   
   if (checkValue >= rpgSession.difficultyClass) {
     // AI Response
@@ -68,34 +73,38 @@ function processCheck(checkValue, rpgSessionId) {
   return response
 }
 
-function startGame(selectedClass, userId) {
+function startGame(selectedClass, userId, currentSessionType) {
+
+  if (currentSessionType === 'r') {
+    currentSessionType = sessionType.RANDOM
+  } else if (currentSessionType === 'm') {
+    currentSessionType = sessionType.VOYAGE_OF_THE_MOONSTONE
+  }
 
   const rpgSessionId = Date.now()
 
   saveCharacter(selectedClass, rpgSessionId)
 
-  // 2 is always the first scene number
-  const questScene = findQuestScene(2)
+  const questScene = newScene(rpgSessionId, FIRST_SCENE_ID, currentSessionType)
 
   const sceneId =  saveScene({
-    rpgSessionId, userId, text: questScene.encounter, questSceneId: 2, description: questScene.description
+    rpgSessionId, userId, text: questScene.encounter, questSceneId: FIRST_SCENE_ID, description: questScene.description
   })
-
-  const quest = `The last of the Kai Lords assigns you the mission to take the legendary Moonstone to Elzian—the principal city of the jungle realm of Dessi. There you are to seek out Lord Rimoah at the Tower of Truth.`
 
   session = {
     rpgSessionId, 
     startedOn: new Date().toLocaleString('pt-br'),
-    quest: String(quest),
+    quest: String(questScene.quest),
     difficultyClass: difficultyClass(),
     sceneId,
-    userId
+    userId,
+    type: currentSessionType
   }
 
   // Saving the game
   saveSession(session)
 
-  const gameSettings = `${quest}\nYou are in ${questScene.place} ${questScene.description}`
+  const gameSettings = `${questScene.description}`
 
   return {
     instruction: '',
@@ -157,7 +166,7 @@ function combat(actionName, rpgSessionId) {
 
   let currentScene = findScene(rpgSession.scene)
 
-  const questScene = findQuestScene(currentScene.questSceneId)
+  const questScene = findQuestScene(currentScene.questSceneId, rpgSession.type, rpgSessionId)
 
   // Firebolt automatically hits
   if(combatAction.name === WIZARD.combatActions[1].name) {
@@ -249,13 +258,41 @@ function continueGame(userId) {
 
   const user = findUser(userId)
   const scene = findScene(user.lastSceneId)
+  const rpgSession = findSession(scene.rpgSessionId)
 
   return {
     textToCopy: scene.description.concat('\n\nWhat do you do?'),
-    nextScene: findQuestScene(scene.questSceneId).nextSceneCondition,
+    nextScene: findQuestScene(scene.questSceneId, rpgSession.type).nextSceneCondition,
     rpgSessionId: scene.rpgSessionId,
     hitPoints: findCharacter(scene.rpgSessionId).hitPoints,
     armorClass: getCharacterClassByName(FIGTHER.name).armorClass
   }
 
+}
+
+function newScene(rpgSessionId, sceneNumber, currentSessionType) {
+
+  let scene = {}
+
+  if (currentSessionType === sessionType.RANDOM ) {
+    
+    // the quest is generated and completed by AI only in the first scene
+    scene.quest = sceneNumber === FIRST_SCENE_ID ? completeText(randomGenerate(QUEST, '')) : ''
+    
+    // from the second scene from awards, the place is being completed with AI text
+    scene.place = sceneNumber === FIRST_SCENE_ID ? toLowerCaseFirstLetter(randomGenerate(LOCATION, '')) : 
+      completeText(toLowerCaseFirstLetter(randomGenerate(LOCATION, '')))
+
+    scene.encounter = randomGenerate(ENCOUNTER, DUNGEON)
+    scene.description = `${scene.quest} You are in ${scene.place} ${scene.encounter}`
+    scene.rpgSessionId = rpgSessionId
+    scene.sceneNumber = sceneNumber
+
+    saveGeneratedScene(scene)
+
+  } else {
+    scene = findQuestScene(sceneNumber, currentSessionType)
+  }
+
+  return scene
 }

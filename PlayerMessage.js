@@ -9,6 +9,8 @@ const MSG_ATTACK = 'How would you like to attack?'
 const MSG_GENERATE_TEXT = 'Generate text'
 const MSG_OOC = 'Out Of Character'
 
+const FIRST_SCENE_ID = 2
+
 const messageType = {
   ATTACK: 'attack',
   SPEAK: 'speak',
@@ -22,7 +24,7 @@ function processMessage(message, rpgSessionId) {
 
   const currentScene = findScene(rpgSession.scene)
 
-  const questScene = findQuestScene(currentScene.questSceneId)
+  const questScene = findQuestScene(currentScene.questSceneId, rpgSession.type, rpgSessionId)
 
   let questSceneId = currentScene.questSceneId
 
@@ -59,14 +61,16 @@ function processMessage(message, rpgSessionId) {
   if (message.type === messageType.STORY) {
 
     questSceneId = currentScene.questSceneId + 1
-    const newScene = findQuestScene(questSceneId)
+    const nextScene = newScene(rpgSessionId, questSceneId, rpgSession.type)
+
     const sceneId =  saveScene({
-      rpgSessionId, userId: rpgSession.userId, text: newScene.encounter, questSceneId, description: newScene.description
+      rpgSessionId, userId: rpgSession.userId, text: nextScene.encounter, questSceneId, description: nextScene.description
     })
 
+    // update scene Id in the rpg_session sheet 
     updateSessionScene(sceneId, rpgSessionId)
-    response.textToCopy = newScene.description
-    response.nextScene = newScene.nextSceneCondition
+    response.textToCopy = nextScene.description
+    response.nextScene = nextScene.nextSceneCondition
   }
 
     // Saving in the player messages sheet
@@ -164,4 +168,8 @@ function convertDate() {
   for (var i = 1;i < data.length; i++ ) {
     sheet.getRange(i+1, 2, 1, 1).setValues([[String(new Date(data[i][0]).toLocaleString('en-us'))]])
   }
+}
+
+function toLowerCaseFirstLetter(string) {
+  return string.charAt(0).toLowerCase() + string.slice(1);
 }
