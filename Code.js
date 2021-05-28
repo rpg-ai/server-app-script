@@ -5,17 +5,19 @@ function doGet(e) {
 
   const htmlOutput = HtmlService.createTemplateFromFile('index')
   htmlOutput.userId = userId
-  htmlOutput.sessionType = e.parameter.st
   
   if (user.lastSceneId) {
     const scene = findScene(user.lastSceneId)
+    const session = findSession(scene.rpgSessionId)
 
+    htmlOutput.sessionType = session.type
     htmlOutput.continueGame = true
     htmlOutput.rpgSessionId = scene.rpgSessionId
 
     return htmlOutput.evaluate()
   }
 
+  htmlOutput.sessionType = returnSessionType(e.parameter.st)
   htmlOutput.continueGame = false
   
   return htmlOutput.evaluate()

@@ -75,12 +75,6 @@ function processCheck(checkValue, rpgSessionId) {
 
 function startGame(selectedClass, userId, currentSessionType) {
 
-  if (currentSessionType === 'r') {
-    currentSessionType = sessionType.RANDOM
-  } else if (currentSessionType === 'm') {
-    currentSessionType = sessionType.VOYAGE_OF_THE_MOONSTONE
-  }
-
   const rpgSessionId = Date.now()
 
   saveCharacter(selectedClass, rpgSessionId)
@@ -262,7 +256,7 @@ function continueGame(userId) {
 
   return {
     textToCopy: scene.description.concat('\n\nWhat do you do?'),
-    nextScene: findQuestScene(scene.questSceneId, rpgSession.type).nextSceneCondition,
+    nextScene: findQuestScene(scene.questSceneId, rpgSession.type, scene.rpgSessionId).nextSceneCondition,
     rpgSessionId: scene.rpgSessionId,
     hitPoints: findCharacter(scene.rpgSessionId).hitPoints,
     armorClass: getCharacterClassByName(FIGTHER.name).armorClass

@@ -173,3 +173,10 @@ function convertDate() {
 function toLowerCaseFirstLetter(string) {
   return string.charAt(0).toLowerCase() + string.slice(1);
 }
+
+function returnSessionType(st) {
+  if (st === 'm') {
+    return sessionType.VOYAGE_OF_THE_MOONSTONE
+  }
+  return sessionType.RANDOM
+}
