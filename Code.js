@@ -14,13 +14,17 @@ function doGet(e) {
     htmlOutput.continueGame = true
     htmlOutput.rpgSessionId = scene.rpgSessionId
 
-    return htmlOutput.evaluate()
+    let htmlResponse = htmlOutput.evaluate()
+    htmlResponse.setTitle("UGNOME")
+    return htmlResponse
   }
 
   htmlOutput.sessionType = returnSessionType(e.parameter.st)
   htmlOutput.continueGame = false
-  
-  return htmlOutput.evaluate()
+
+  let htmlResponse = htmlOutput.evaluate()
+  htmlResponse.setTitle("UGNOME")
+  return htmlResponse
 }
 
 function doPost(e) {

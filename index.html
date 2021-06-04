@@ -231,16 +231,14 @@
       border-radius: 8px;
       border: none;
       padding: 0 10px;
-      padding-right: 50px;
-      margin-right: 50px;
     }
 
     .input-container > button {
-      position: fixed;
-      margin-left: 885px;
+      margin-left: 5px;
       border-radius: 50%;
-      height: 40px;
-      width: 40px;
+      height: 50px;
+      width: 50px;
+      font-size: 0;
       background-color: #707090;
       border: none;
       transition: background-color 0.3s;
@@ -284,6 +282,7 @@
           <p v-else>{{ message.content }}</p>
           <button v-for="button in message.predictions" @click="sendRollResult(button.value)" class="roll-button">{{ button.label }}</button>
           <button v-for="button in message.combatActions" @click="attackRoll(button.name)" class="roll-button">{{ button.name }}</button>
+          <button v-if="message.type == 'instruction'" @click="playGame" class="roll-button">Let's Go!</button>
         </div>
       </div>
     </div>
@@ -293,7 +292,7 @@
         <button id="action" class="selected" @click="select('action')">ACTION</button>
         <button id="attack" @click="select('attack')">ATTACK</button>
         <button id="speak" @click="select('speak')">SPEAK</button>
-        <button id="story" @click="select('story')" :style="{visibility: gameInfo.sessionType === 'moonstone' ? 'visible' : 'hidden'}">LEAVE ROOM</button>
+        <button id="story" @click="select('story')" v-if="gameInfo.sessionType === 'moonstone'">LEAVE ROOM</button>
       </div>
       <div class="container input-container">
         <img class="avatar" src="https://raw.githubusercontent.com/rpg-ai/public/main/images/Avatar.png" alt="Avatar"/>
@@ -309,7 +308,8 @@
   const sessionType = <?= sessionType ?>;
   console.log(sessionType)
   const delay = ms => new Promise(res => setTimeout(res, ms));
-  let rpgSessionId = ''
+  let rpgSessionId = '';
+  let FISRT_MESSAGE = '';
   let app = new Vue({
     el: '#rpgai',
     data: function () {
@@ -390,11 +390,27 @@
       giveFeedback: function(opinion, messageId) {
         let scope = this;
         google.script.run.generatedTextController(messageId, opinion)
+      },
+      sendHowToPlay: function() {
+        let scope = this;
+        const howToPlay = "Welcome, adventurer!\nI'm the Dungeon Master and i'll guide you in this Adventure.\nIn first, you should know better the mode buttons, they are in the blue on the action zone.\nThere are four buttons:\n1. Action\n2. Attack\n3. Speak\n4. Leave scene\nEach of them will have a function on your gameplay.\n\nAction means that your text describes an action that you're doing.\nAttack means that your text describes an attack that you're doing.\nSpeak means that your text is a phrasis that you're saying.\nLeave scene means that you want to advance on the history, going to the next checkpoint of the adventure.\n\nNow you know more about the action types, are we ready to play?\n"
+        scope.messages.push({
+          sender: "master",
+          type: "instruction",
+          content: howToPlay
+        });
+      },
+      playGame: function() {
+        let scope = this;
+        onSuccess(FISRT_MESSAGE);
       }
     },
     beforeUpdate () {
       updateScroll();
     },
+    mounted () {
+      this.sendHowToPlay();
+    }
   });
 
   Vue.component('feedback', {
@@ -455,7 +471,8 @@
         app._data.gameInfo.playerHp = response.hitPoints;
         app._data.gameInfo.playerAc = response.armorClass;
         app._data.formConfigs.placeholders.story = response.nextScene;
-        onSuccess(response)
+        FISRT_MESSAGE = response;
+        // onSuccess(response)
       })
       .withFailureHandler(onFailure)
       .rpgSessionController(characterClass, userId, sessionType)
@@ -471,7 +488,7 @@
         app._data.gameInfo.playerHp = response.hitPoints;
         app._data.gameInfo.playerAc = response.armorClass;
         app._data.formConfigs.placeholders.story = response.nextScene;
-        onSuccess(response)
+        FISRT_MESSAGE = response;
       })
       .withFailureHandler(onFailure)
       .gameController(userId)
@@ -515,6 +532,7 @@
 
   function onSuccess(response) {
     if(response.textToCopy) {
+      let scope = app._data;
       let message = {
         sender: "master",
         type: "story",
@@ -529,16 +547,19 @@
       }
 
       if (response.hitPoints) {
-        app._data.gameInfo.playerHp = response.hitPoints;
+        scope.gameInfo.playerHp = response.hitPoints;
       }
 
       // messages.pop() removes the the last message from stack, the message with loading gif
-      app._data.messages.pop();
-      app._data.messages.push(message);
+      if (scope.messages[scope.messages.length - 1].type !== 'instruction') {
+        scope.messages.pop();
+      }
+      
+      scope.messages.push(message);
     }
 
     if(response.nextScene) {
-      app._data.formConfigs.placeholders.story = response.nextScene;
+      scope.formConfigs.placeholders.story = response.nextScene;
     }
   }
 
