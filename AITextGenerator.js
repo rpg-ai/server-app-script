@@ -1,5 +1,5 @@
 const DEEPAI_API_URL = 'https://api.deepai.org/api/text-generator'
-const DEEPAI_API_KEY = 'e3bb9547-1d82-4ab9-9b96-031bef9f08d9'
+const DEEPAI_API_KEY = ''
 
 const OPENAI_API_URL = 'https://api.openai.com/v1/engines/davinci/completions'
 const OPENAI_API_KEY = ''
