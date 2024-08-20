@@ -2,8 +2,8 @@ const DEEPAI_API_URL = 'https://api.deepai.org/api/text-generator'
 const DEEPAI_API_KEY = 'e3bb9547-1d82-4ab9-9b96-031bef9f08d9'
 
 const OPENAI_API_URL = 'https://api.openai.com/v1/engines/davinci/completions'
-const OPENAI_API_KEY = 'sk-gbcWZW7Pzw2q66fZJBhoKMVgO5NvJNEDrYhm0G04'
-const OPENAI_API_KEY_2 = 'sk-XAGY4o2TGLQnIv2kpUpBd4Td475ekM0CxK7gzUoy'
+const OPENAI_API_KEY = ''
+const OPENAI_API_KEY_2 = ''
 
 const NUMBER_OF_SENTENCES_SPEAK = 3
 const NUMBER_OF_SENTENCES_ACTION = 3
